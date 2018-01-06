@@ -6,14 +6,14 @@ trait ModelTrait
 {
     /**
      * Search name.
-     * 
+     *
      * @var array
      */
     protected $search_name = '';
 
     /**
      * Specified custom search attributes.
-     * 
+     *
      * @var array
      */
     protected $custom_search_attributes = [
@@ -22,7 +22,7 @@ trait ModelTrait
 
     /**
      * Specified custom search relationships.
-     * 
+     *
      * @var array
      */
     protected $custom_search_relationships = [
@@ -41,7 +41,7 @@ trait ModelTrait
 
     /**
      * Get the custom attributes.
-     * 
+     *
      * @return array
      */
     public function getCustomSearchAttributesAttribute($value)
@@ -51,7 +51,7 @@ trait ModelTrait
 
     /**
      * Get the specified (and limited) relationshiips.
-     * 
+     *
      * @return array
      */
     public function getCustomSearchRelationshipsAttribute($value)
@@ -61,7 +61,7 @@ trait ModelTrait
 
     /**
      * Get the search name for this model.
-     * 
+     *
      * @return array
      */
     public function getSearchNameAttribute($value)

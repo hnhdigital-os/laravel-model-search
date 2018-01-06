@@ -2,7 +2,6 @@
 
 namespace HnhDigital\ModelSearch;
 
-use DB;
 use Illuminate\Database\Query\Expression;
 use Schema;
 
@@ -248,14 +247,14 @@ class ModelSearch
                 unset($filters[$index]);
             }
         }
-        
+
         return $filters;
     }
 
     /**
      * Validate each entry.
      *
-     * @param array|string $filter  
+     * @param array|string $filter
      * @param array        $settings
      *
      * @return array|null
@@ -296,14 +295,14 @@ class ModelSearch
         $filter = self::{$validation_method}($filter);
 
         // Update based on operator.
-        $filter['positive'] = !(stripos($operator, '!') !== false || stripos($operator, 'NOT') !== false);;
+        $filter['positive'] = !(stripos($operator, '!') !== false || stripos($operator, 'NOT') !== false);
 
         return $filter;
     }
 
     /**
      * Applies a wildcard for between every character.
-     * 
+     *
      * @param string &$value
      *
      * @return void
@@ -316,7 +315,7 @@ class ModelSearch
 
     /**
      * Check the value for inline operator.
-     * 
+     *
      * @param string &$operator
      * @param string &$value
      *
@@ -591,7 +590,7 @@ class ModelSearch
         foreach ($relationships as $relation_name) {
             $relation = $this->model->$relation_name();
             $relation_method = basename(str_replace('\\', '/', get_class($relation)));
-                $table = $relation->getTable();
+            $table = $relation->getTable();
 
             if ($relation_method === 'HasOne' || $relation_method === 'BelongsTo') {
                 $table = $relation->getRelated()->getTable();
@@ -626,7 +625,6 @@ class ModelSearch
      */
     private function getTableKeys($relation_method)
     {
-
         switch ($relation_method) {
             case 'BelongsTo':
                 $parent_key = $relation->getQualifiedForeignKey();
@@ -679,7 +677,7 @@ class ModelSearch
      * Apply filters to the query.
      *
      * @param Builder $query
-     * @param array  $filters
+     * @param array   $filters
      *
      * @return void
      */
@@ -689,7 +687,7 @@ class ModelSearch
             $method = array_get($filter, 'method');
             $arguments = array_get($filter, 'arguments');
             $query->$method(...$arguments);
-        }        
+        }
     }
 
     /**
