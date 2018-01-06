@@ -1,0 +1,25 @@
+{
+    "name": "hnhdigital-os/laravel-model-search",
+    "description": "Query a model.",
+    "keywords": ["laravel","illuminate","assets"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rocco Howard",
+            "email": "rocco@hnh.digital"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0",
+        "laravel/framework": ">=5.5"
+    },
+    "require-dev": {
+        "illuminate/database": "4.*|5.*",
+        "codeclimate/php-test-reporter": "dev-master"
+    },
+    "autoload": {
+        "psr-4": {
+            "HnhDigital\\ModelSearch\\": "src/"
+        }
+    }
+}
