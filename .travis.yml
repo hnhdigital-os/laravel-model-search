@@ -9,4 +9,4 @@ before_script:
   - chmod +x ./cc-test-reporter
   - ./cc-test-reporter before-build
 after_script:
-  - ./cc-test-reporter after-build -p reports/ --exit-code $TRAVIS_TEST_RESULT
+  - ./cc-test-reporter after-build -t clover --exit-code $TRAVIS_TEST_RESULT
