@@ -18,12 +18,18 @@ This package has been developed by H&H|Digital, an Australian botique developer.
 
 ## Documentation
 
+* [Requirements](#requirements)
 * [Installation](#install)
 * [Configuration](#configuration)
 * [Usage](#usage)
 * [Contributing](#contributing)
 * [Credits](#credits)
 * [License](#license)
+
+## Requirements
+
+* Larvel 5.5
+* PHP 7.1
 
 ## Install
 
