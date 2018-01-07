@@ -147,8 +147,29 @@ class ModelSearch
         $this->query = $query;
         $this->checkModel($model);
         $this->checkRequest($request);
+    }
 
-        $this->run();
+    /**
+     * Process query.
+     *
+     * @return void
+     */
+    public function run()
+    {
+        foreach ($this->search_models as $model_name => $filters) {
+            // Apply search against the original model.
+            if ($model_name === 'self') {
+                self::applySearch($this->query, $filters);
+                continue;
+            }
+
+            // Apply search against the related model.
+            $this->query->whereHas($model_name, function ($query) use ($filters) {
+                self::applySearch($query, $filters);
+            });
+        }
+
+        return $this->query;
     }
 
     /**
@@ -279,7 +300,7 @@ class ModelSearch
             // Get the settings for the given attribute.
             $settings = array_get($this->attributes, $name);
 
-            // Chech and validate each of the filters.
+            // Check and validate each of the filters.
             $filters = self::validateFilters($filters, $settings);
 
             // Filter did not pass validation.
@@ -295,12 +316,12 @@ class ModelSearch
 
             // Search against an model via relationship.
             $models_used[$model_name] = true;
-            $this->search_models[$model_name][$name] = $filters;
+            $this->query->search_models[$model_name][$name] = $filters;
         }
 
         // Join the models to this query.
         if (count($models_used)) {
-            $this->modelJoin($this->query, $models_used);
+            $this->query->modelJoin($models_used);
         }
     }
 
@@ -408,14 +429,13 @@ class ModelSearch
     public static function checkInlineOperator(&$operator, &$value)
     {
         $value_array = explode(' ', trim($value), 2);
-        $check_operator = array_shift($value_array);
 
-        if (count($check_operator) == 1) {
+        if (count($value_array) == 1) {
             return;
         }
 
-        $operator = $check_operator;
-        $value = array_get($value_array, 1);
+        $operator = array_shift($value_array);
+        $value = array_shift($value_array);
     }
 
     /**
@@ -649,7 +669,6 @@ class ModelSearch
     /**
      * This determines the foreign key relations automatically to prevent the need to figure out the columns.
      *
-     * @param Builder $query
      * @param string  $relation_name
      * @param string  $operator
      * @param string  $type
@@ -737,27 +756,6 @@ class ModelSearch
     }
 
     /**
-     * Process query.
-     *
-     * @return void
-     */
-    private function run()
-    {
-        foreach ($this->search_models as $model_name => $filters) {
-            // Apply search against the original model.
-            if ($model_name === 'self') {
-                self::applySearch($this->query, $filters);
-                continue;
-            }
-
-            // Apply search against the related model.
-            $this->query->whereHas($model_name, function ($query) use ($filters) {
-                self::applySearch($query, $filters);
-            });
-        }
-    }
-
-    /**
      * Apply search items to the query.
      *
      * @param Builder $query
@@ -765,7 +763,7 @@ class ModelSearch
      *
      * @return void
      */
-    private static function applySearch($query, $search)
+    private static function applySearch(&$query, $search)
     {
         foreach ($search as $name => $filters) {
             foreach ($filters as $filter) {

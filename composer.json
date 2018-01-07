@@ -21,5 +21,19 @@
         "psr-4": {
             "HnhDigital\\ModelSearch\\": "src/"
         }
+    },
+    "scripts": {
+        "test": [
+            "composer phpunit && composer phpcs && composer phpmd"
+        ],
+        "phpunit": [
+            "phpunit"
+        ],
+        "phpcs": [
+            "phpcs -p -s --standard=PSR2 ./src ./tests"
+        ],
+        "phpmd": [
+            "phpmd ./src phpmd.xml"
+        ]
     }
 }
