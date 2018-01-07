@@ -9,7 +9,7 @@ class ModelTest extends TestCase
 {
     /**
      * PDO.
-     * 
+     *
      * @var
      */
     private $pdo;
@@ -32,7 +32,7 @@ class ModelTest extends TestCase
      */
     private function configureDatabase()
     {
-        $db = new DB;
+        $db = new DB();
 
         $db->addConnection([
             'driver'    => 'sqlite',
@@ -55,7 +55,7 @@ class ModelTest extends TestCase
      */
     private function migrateMockModelsTable()
     {
-        DB::schema()->create('mock_model', function($table) {
+        DB::schema()->create('mock_model', function ($table) {
             $table->increments('id');
             $table->string('title', 255);
             $table->timestamps();
@@ -77,7 +77,7 @@ class ModelTest extends TestCase
 
     /**
      * Get binded sql.
-     * 
+     *
      * @param Builder $query
      *
      * @return string
