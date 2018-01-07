@@ -164,6 +164,81 @@ class ModelSearch
     }
 
     /**
+     * Build a list of all possible attributes.
+     *
+     * @return void
+     */
+    public static function buildAttributes($model)
+    {
+        $result = [];
+
+        // Build attributes off the specified casts.
+        foreach ($model->getCasts() as $name => $cast) {
+            $result[$name] = [
+                'name'       => $name,
+                'title'      => $name,
+                'attributes' => [sprintf('%s.%s', $model->getTable(), $name)],
+                'filter'     => $cast,
+                'model'      => &$model,
+                'model_name' => 'self',
+            ];
+        }
+
+        // Apply any custom attributes that have been specified.
+        foreach ($model->getSearchAttributes() as $name => $settings) {
+            // Specified name or use key.
+            $title = array_get($settings, 'title', $name);
+
+            if ($title === $name) {
+                $title = title_case($title);
+            }
+
+            // Specified attributes, or attribute.
+            $attributes = array_get($settings, 'attributes', array_get('settings', 'attribute', []));
+
+            self::validateAttributes($model, $name, $attributes);
+
+            // Allocate.
+            $result[$name] = [
+                'name'       => $name,
+                'title'      => $title,
+                'attributes' => $attributes,
+                'filter'     => array_get($settings, 'filter', 'string'),
+                'model'      => &$model,
+                'model_name' => 'self',
+            ];
+        }
+
+        return $result;
+    }
+
+    /**
+     * Validate the attributes list.
+     *
+     * @return void
+     */
+    private static function validateAttributes($model, $name, &$attributes)
+    {
+        // Should be an array.
+        if (!is_array($attributes)) {
+            $attributes = [$attributes];
+        }
+
+        // Is empty, so we base it off the key.
+        if (empty($attributes)) {
+            $attributes = [sprintf('%s.%s', $model->getTable(), $name)];
+        }
+
+        // Check each of the attribute values.
+        // Convert any prepended with a curly to an expression.
+        foreach ($attributes as &$value) {
+            if (substr($value, 0) === '{') {
+                $value = new Expression(substr($value, 1));
+            }
+        }
+    }
+
+    /**
      * Build a list of all possible relationships.
      *
      * @return void
@@ -173,7 +248,7 @@ class ModelSearch
     private function buildRelationships()
     {
         // Specified relationships.
-        $custom_relationships = array_get($this->model, 'custom_search_relationships', []);
+        $search_relationships = $this->model->getSearchRelationships();
 
         // Auto discover relationships.
     }
@@ -185,6 +260,10 @@ class ModelSearch
      */
     private function checkRequest($request)
     {
+        if (empty($request)) {
+            return;
+        }
+
         $this->request = $request;
 
         // Models used in this request.
@@ -278,6 +357,11 @@ class ModelSearch
         }
 
         self::checkInlineOperator($operator, $value_one);
+
+        // Defaullt operator.
+        if (empty($operator)) {
+            $operator = '*=*';
+        }
 
         // Return filter as an associative array.
         $filter = [
@@ -662,31 +746,33 @@ class ModelSearch
         foreach ($this->search_models as $model_name => $filters) {
             // Apply search against the original model.
             if ($model_name === 'self') {
-                self::applyFilters($this->query, $filters);
+                self::applySearch($this->query, $filters);
                 continue;
             }
 
             // Apply search against the related model.
             $this->query->whereHas($model_name, function ($query) use ($filters) {
-                self::applyFilters($query, $filters);
+                self::applySearch($query, $filters);
             });
         }
     }
 
     /**
-     * Apply filters to the query.
+     * Apply search items to the query.
      *
      * @param Builder $query
-     * @param array   $filters
+     * @param array   $search
      *
      * @return void
      */
-    private static function applyFilters($query, $filters)
+    private static function applySearch($query, $search)
     {
-        foreach ($filters as $filter) {
-            $method = array_get($filter, 'method');
-            $arguments = array_get($filter, 'arguments');
-            $query->$method(...$arguments);
+        foreach ($search as $name => $filters) {
+            foreach ($filters as $filter) {
+                $method = array_get($filter, 'method');
+                $arguments = array_get($filter, 'arguments');
+                $query->$method(...$arguments);
+            }
         }
     }
 
@@ -740,82 +826,5 @@ class ModelSearch
         $input = explode(';', $input);
 
         return array_filter(array_map('trim', $input));
-    }
-
-    /**
-     * Build a list of all possible attributes.
-     *
-     * @return void
-     */
-    public static function buildAttributes($model)
-    {
-        $result = [];
-
-        // Build attributes off the specified casts.
-        foreach ($model->getCasts() as $name => $cast) {
-            $result[$name] = [
-                'name'       => $name,
-                'title'      => $name,
-                'attributes' => [sprintf('%s.%s', $model->getTable(), $name)],
-                'filter'     => $cast,
-                'model'      => &$model,
-                'model_name' => 'self',
-            ];
-        }
-
-        $custom_attributes = array_get($model, 'custom_search_attributes', []);
-
-        // Apply any custom attributes that have been specified.
-        foreach ($custom_attributes as $name => $settings) {
-            // Specified name or use key.
-            $title = array_get($settings, 'title', $name);
-
-            if ($title === $name) {
-                $title = title_case($title);
-            }
-
-            // Specified attributes, or attribute.
-            $attributes = array_get($settings, 'attributes', array_get('settings', 'attribute', []));
-
-            self::validateAttributes($model, $name, $attributes);
-
-            // Allocate.
-            $result[$name] = [
-                'name'       => $name,
-                'title'      => $title,
-                'attributes' => $attributes,
-                'filter'     => array_get($settings, 'filter', 'string'),
-                'model'      => &$model,
-                'model_name' => 'self',
-            ];
-        }
-
-        return $result;
-    }
-
-    /**
-     * Validate the attributes list.
-     *
-     * @return void
-     */
-    private static function validateAttributes($model, $name, &$attributes)
-    {
-        // Should be an array.
-        if (!is_array($attributes)) {
-            $attributes = [$attributes];
-        }
-
-        // Is empty, so we base it off the key.
-        if (empty($attributes)) {
-            $attributes = [sprintf('%s.%s', $model->getTable(), $name)];
-        }
-
-        // Check each of the attribute values.
-        // Convert any prepended with a curly to an expression.
-        foreach ($attributes as &$value) {
-            if (substr($value, 0) === '{') {
-                $value = new Expression(substr($value, 1));
-            }
-        }
     }
 }

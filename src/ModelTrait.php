@@ -5,31 +5,6 @@ namespace HnhDigital\ModelSearch;
 trait ModelTrait
 {
     /**
-     * Search name.
-     *
-     * @var array
-     */
-    protected $search_name = '';
-
-    /**
-     * Specified custom search attributes.
-     *
-     * @var array
-     */
-    protected $custom_search_attributes = [
-
-    ];
-
-    /**
-     * Specified custom search relationships.
-     *
-     * @var array
-     */
-    protected $custom_search_relationships = [
-
-    ];
-
-    /**
      * Apply a search.
      *
      * @return self
@@ -40,13 +15,31 @@ trait ModelTrait
     }
 
     /**
+     * Get the search name for this model.
+     *
+     * @return array
+     */
+    public function getSearchName()
+    {
+        if (empty($this->search_name)) {
+            return $this->getTable();
+        }
+
+        return $this->search_name;
+    }
+
+    /**
      * Get the custom attributes.
      *
      * @return array
      */
-    public function getCustomSearchAttributesAttribute($value)
+    public function getSearchAttributes()
     {
-        return $value;
+        if (empty($this->search_attributes)) {
+            return [];
+        }
+
+        return $this->search_attributes;
     }
 
     /**
@@ -54,22 +47,12 @@ trait ModelTrait
      *
      * @return array
      */
-    public function getCustomSearchRelationshipsAttribute($value)
+    public function getSearchRelationships()
     {
-        return $value;
-    }
-
-    /**
-     * Get the search name for this model.
-     *
-     * @return array
-     */
-    public function getSearchNameAttribute($value)
-    {
-        if (empty($value)) {
-            return $this->getTable();
+        if (empty($this->search_relationships)) {
+            return [];
         }
 
-        return $value;
+        return $this->search_relationships;
     }
 }
