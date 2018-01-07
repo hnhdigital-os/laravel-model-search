@@ -771,7 +771,20 @@ class ModelSearch
             foreach ($filters as $filter) {
                 $method = array_get($filter, 'method');
                 $arguments = array_get($filter, 'arguments');
-                $query->$method(...$arguments);
+                $attributes = array_get($filter, 'settings.attributes');
+                array_unshift($arguments, '');
+
+                $query->where(function($query) use ($attributes, $method, $arguments) {
+                    $count = 0;
+                    foreach ($attributes as $attribute_name) {
+                        $arguments[0] = $attribute_name;
+                        $query->$method(...$arguments);
+                        if ($count === 0) {
+                            $method = 'or'.studly_case($method);
+                        }
+                        $count++;
+                    }
+                });
             }
         }
     }
