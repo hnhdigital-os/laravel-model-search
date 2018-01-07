@@ -14,8 +14,7 @@
         "laravel/framework": ">=5.5"
     },
     "require-dev": {
-        "illuminate/database": "4.*|5.*",
-        "codeclimate/php-test-reporter": "dev-master"
+        "illuminate/database": "4.*|5.*"
     },
     "autoload": {
         "psr-4": {
