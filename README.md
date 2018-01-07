@@ -28,7 +28,7 @@ This package has been developed by H&H|Digital, an Australian botique developer.
 
 ## Requirements
 
-* Larvel 5.5
+* Laravel 5.5
 * PHP 7.1
 
 ## Install
