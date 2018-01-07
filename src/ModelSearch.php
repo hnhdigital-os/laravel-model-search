@@ -669,10 +669,10 @@ class ModelSearch
     /**
      * This determines the foreign key relations automatically to prevent the need to figure out the columns.
      *
-     * @param string  $relation_name
-     * @param string  $operator
-     * @param string  $type
-     * @param bool    $where
+     * @param string $relation_name
+     * @param string $operator
+     * @param string $type
+     * @param bool   $where
      *
      * @return Builder
      *
@@ -772,7 +772,7 @@ class ModelSearch
                 $attributes = array_get($filter, 'settings.attributes');
                 array_unshift($arguments, '');
 
-                $query->where(function($query) use ($attributes, $method, $arguments) {
+                $query->where(function ($query) use ($attributes, $method, $arguments) {
                     $count = 0;
                     foreach ($attributes as $attribute_name) {
                         $arguments[0] = $attribute_name;
