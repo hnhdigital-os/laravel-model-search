@@ -17,10 +17,12 @@ class MockModel extends Model
      * @var array
      */
     protected $casts = [
-        'id'    => 'integer',
-        'title' => 'string',
-        'name'  => 'string',
-        'phone' => 'string',
+        'id'         => 'integer',
+        'is_enabled' => 'boolean',
+        'title'      => 'string',
+        'name'       => 'string',
+        'phone'      => 'string',
+        'total'      => 'numeric',
     ];
 
     /**

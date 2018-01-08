@@ -200,7 +200,7 @@ class ModelSearch
                 'name'       => $name,
                 'title'      => $name,
                 'attributes' => [sprintf('%s.%s', $model->getTable(), $name)],
-                'filter'     => $cast,
+                'filter'     => self::convertCast($cast),
                 'model'      => &$model,
                 'model_name' => 'self',
             ];
@@ -233,6 +233,23 @@ class ModelSearch
         }
 
         return $result;
+    }
+
+    /**
+     * Convert cast string to what model search uses.
+     *
+     * @return string
+     */
+    private function convertCast($cast)
+    {
+        switch ($cast) {
+            case 'numeric':
+            case 'decimal':
+            case 'double':
+                return 'number';
+        }
+
+        return $cast;
     }
 
     /**
@@ -369,7 +386,7 @@ class ModelSearch
         }
 
         // Convert string to filter array.
-        if (count($filter) == 1) {
+        if (array_get($settings, 'filter') !== 'boolean' && count($filter) == 1) {
             array_unshift($filter, '');
         }
 
@@ -390,7 +407,7 @@ class ModelSearch
 
         // Defaullt operator.
         if (empty($operator)) {
-            $operator = '*=*';
+            $operator = self::getDefaultOperator(array_get($settings, 'filter'), $operator);
         }
 
         // Return filter as an associative array.
@@ -415,6 +432,27 @@ class ModelSearch
     }
 
     /**
+     * Get the default operator.
+     *
+     * @param string $filter
+     * 
+     * @return string
+     */
+    public static function getDefaultOperator($filter, $operator)
+    {
+        switch ($filter) {
+            case 'string':
+                return '*=*';
+            case 'number':
+                return '=';
+            case 'boolean':
+                return '=';
+            case 'list':
+                return 'IN';
+        }
+    }
+
+    /**
      * Applies a wildcard for between every character.
      *
      * @param string &$value
@@ -427,6 +465,41 @@ class ModelSearch
         $operator = $positive ? '*=*' : '*!=*';
         $value_array = str_split(str_replace(' ', '', $value));
         $value = implode('%', $value_array);
+    }
+
+    /**
+     * Check the value for inline operator.
+     *
+     * @param string &$operator
+     * @param string &$value
+     *
+     * @return void
+     */
+    public static function checkInlineOperator(&$operator, &$value, $settings)
+    {
+        if (is_array($value)) {
+            return;
+        }
+
+        // Boolean does not provide inline operations.
+        if (array_get($settings, 'filter') === 'boolean') {
+            $value = (int) $value;
+            $operator = '=';
+            return;
+        }
+
+        $value_array = explode(' ', trim($value), 2);
+
+        if (count($value_array) == 1) {
+            return;
+        }
+
+        $check_operator = array_shift($value_array);
+
+        if (self::checkOperator($settings['filter'], $check_operator)) {
+            $operator = $check_operator;
+            $value = array_shift($value_array);
+        }
     }
 
     /**
@@ -458,30 +531,6 @@ class ModelSearch
         if ($value === 'EMPTY' || $value === 'NOT_EMPTY') {
             $operator = $value;
             $value = '';
-        }
-    }
-
-    /**
-     * Check the value for inline operator.
-     *
-     * @param string &$operator
-     * @param string &$value
-     *
-     * @return void
-     */
-    public static function checkInlineOperator(&$operator, &$value, $settings)
-    {
-        $value_array = explode(' ', trim($value), 2);
-
-        if (count($value_array) == 1) {
-            return;
-        }
-
-        $check_operator = array_shift($value_array);
-
-        if (self::checkOperator($settings['filter'], $check_operator)) {
-            $operator = $check_operator;
-            $value = array_shift($value_array);
         }
     }
 
@@ -578,18 +627,18 @@ class ModelSearch
                 break;
             case 'EMPTY':
                 $method = 'whereRaw';
-                $arguments = "=''";
+                $arguments = "%s = ''";
                 break;
             case 'NOT_EMPTY':
                 $method = 'whereRaw';
-                $arguments = "!=''";
+                $arguments = "%s != ''";
                 break;
             case 'IN':
                 $method = 'whereIn';
                 $arguments = [static::getListFromString($value_one)];
                 break;
             case 'NOT_IN':
-                $method = 'whereIn';
+                $method = 'whereNotIn';
                 $arguments = [static::getListFromString($value_one)];
                 break;
             case 'NULL':
@@ -623,14 +672,14 @@ class ModelSearch
     {
         extract($filter);
 
-        switch ($operator) {
+        switch ($value_one) {
             case 1:
             case '1':
-                $arguments = ['=', true];
+                $arguments = ['=', 1];
                 break;
             case 0:
             case '0':
-                $arguments = ['=', false];
+                $arguments = ['=', 0];
                 break;
         }
 
@@ -941,11 +990,17 @@ class ModelSearch
      *
      * @return array
      */
-    private static function getListFromString($input)
+    private static function getListFromString($value)
     {
-        $input = str_replace([',', ' '], ';', $input);
-        $input = explode(';', $input);
+        if (is_string($value_array = $value)) {
+            $value = str_replace([',', ' '], ';', $value);
+            $value_array = explode(';', $value);
+        }
 
-        return array_filter(array_map('trim', $input));
+        if (is_array($value_array)) {
+            return array_filter(array_map('trim', $value_array));
+        }
+
+        return [];
     }
 }
