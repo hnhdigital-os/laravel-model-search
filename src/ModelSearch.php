@@ -265,7 +265,7 @@ class ModelSearch
             $attributes = [$attributes];
         }
 
-        // Is empty, so we base it off the key.
+        // Is empty, use the name of the table + name.
         if (empty($attributes)) {
             $attributes = [sprintf('%s.%s', $model->getTable(), $name)];
         }
@@ -982,10 +982,6 @@ class ModelSearch
      */
     public static function getAllowedOperators($type)
     {
-        if (!in_array($type, self::$filter_types)) {
-            return [];
-        }
-
         $data = self::getOperators($type);
 
         return array_keys($data);
