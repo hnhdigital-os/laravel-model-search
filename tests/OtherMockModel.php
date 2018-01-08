@@ -5,11 +5,11 @@ namespace HnhDigital\ModelSearch\Tests;
 use HnhDigital\ModelSearch\ModelTrait;
 use Illuminate\Database\Eloquent\Model;
 
-class MockModel extends Model
+class OtherMockModel extends Model
 {
     use ModelTrait;
 
-    protected $table = 'mock_model';
+    protected $table = 'other_mock_model';
 
     /**
      * The attributes that require casting.
@@ -26,52 +26,41 @@ class MockModel extends Model
     ];
 
     /**
-     * Custom search attributes.
+     * Search attributes.
      *
      * @var array
      */
     protected $search_attributes = [
         'lookup' => [
             'title'      => 'Name',
-            'attributes' => ['mock_model.name', 'mock_model.title'],
+            'attributes' => ['other_mock_model.name', 'other_mock_model.title'],
             'filter'     => 'string',
         ],
         'phone' => [
-            'attributes' => 'mock_model.phone',
+            'attributes' => 'other_mock_model.phone',
             'filter'     => 'string',
             'enable'     => [
                 'wild-all' => true,
             ],
         ],
-        'title2' => [],
     ];
 
     /**
-     * Register search relationships.
+     * Search attributes.
      *
      * @var array
      */
     protected $search_relationships = [
-        'otherMockModel',
+        MockModel::class,
     ];
 
     /**
-     * Has many other mock models.
+     * Has one mock model.
      *
      * @return Builder
      */
-    public function otherMockModel()
+    public function mockModel()
     {
-        return $this->hasMany(OtherMockModel::class);
-    }
-
-    public function scopeSomething()
-    {
-
-    }
-
-    public function getSomeThingAttribute()
-    {
-        
+        return $this->hasOne(MockModel::class);
     }
 }

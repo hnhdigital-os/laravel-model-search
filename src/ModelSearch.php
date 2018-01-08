@@ -3,7 +3,7 @@
 namespace HnhDigital\ModelSearch;
 
 use Illuminate\Database\Query\Expression;
-use Schema;
+use Illuminate\Database\Schema\Builder as Schema;
 
 class ModelSearch
 {
@@ -128,6 +128,13 @@ class ModelSearch
     protected $request;
 
     /**
+     * The relationships.
+     *
+     * @var array
+     */
+    protected $relationships;
+
+    /**
      * The attributes.
      *
      * @var array
@@ -182,8 +189,82 @@ class ModelSearch
     private function checkModel($model)
     {
         $this->model = $model;
-        $this->buildRelationships();
-        $this->attributes = self::buildAttributes($this->model);
+        $this->attributes = self::buildRelationshipAttributes($this->model);
+        $this->attributes = $this->attributes + self::buildAttributes($this->model);
+    }
+
+    /**
+     * Build a list of attributes from the relationships.
+     *
+     * @return void
+     */
+    private function buildRelationshipAttributes($model)
+    {
+        $result = [];
+
+        foreach ($model->getSearchRelationships() as $method) {
+            if (!method_exists($model, $method)) {
+                continue;
+            }
+
+            $relation = self::getRelation($model->$method());
+            $this->relationships[$method] = $relation;
+
+            self::buildCastedAttributes($relation['model'], $result, $method);
+            self::buildSearchAttributes($relation['model'], $result, $method);
+        }
+
+
+
+        return $result;
+    }
+
+    /**
+     * Get the table keys based on the relation.
+     *
+     * @param Relation $relation
+     *
+     * @return array
+     */
+    private static function getRelation($relation)
+    {
+        $method = basename(str_replace('\\', '/', get_class($relation)));
+
+        switch ($method) {
+            case 'BelongsTo':
+            case 'HasMany':
+            case 'HasOne':
+                $model = $relation->getRelated();
+                break;
+            default:
+                $model = $relation;
+        }
+
+        $table = $model->getTable();
+
+        switch ($method) {
+            case 'BelongsTo':
+            case 'BelongsToMany':
+                $parent_key = $relation->getQualifiedForeignKey();
+                $foreign_key = $relation->getQualifiedOwnerKeyName();
+            break;
+            case 'HasMany':
+                $parent_key = $relation->getQualifiedParentKeyName();
+                $foreign_key = $relation->getQualifiedForeignKeyName();
+            break;
+            case 'HasOne':
+                $parent_key = $table.'.'.$relation->getParentKey();
+                $foreign_key = $table.'.'.$relation->getForeignKey();
+            break;
+        }
+
+        return [
+            'model'       => $model,
+            'method'      => $method,
+            'table'       => $table,
+            'parent_key'  => $parent_key,
+            'foreign_key' => $foreign_key,
+        ];
     }
 
     /**
@@ -204,59 +285,31 @@ class ModelSearch
     /**
      * Build attributes based on the casts array on the model.
      *
-     * @param Model $model
-     * @param array &$result
+     * @param Model           $model
+     * @param array           &$result
+     * @param nullable|string $method
      *
      * @return void
      */
-    private static function buildCastedAttributes($model, &$result)
+    private static function buildCastedAttributes($model, &$result, $method = null)
     {
+        $model_name = 'self';
+        $name_append = '';
+
+        if (!is_null($method)) {
+            $model_name = $method;
+            $name_append = $method.'.';
+        }
+
         // Build attributes off the specified casts.
         foreach ($model->getCasts() as $name => $cast) {
-            $result[$name] = [
+            $result[$name_append.$name] = [
                 'name'       => $name,
                 'title'      => $name,
                 'attributes' => [sprintf('%s.%s', $model->getTable(), $name)],
                 'filter'     => self::convertCast($cast),
                 'model'      => &$model,
-                'model_name' => 'self',
-            ];
-        }
-    }
-
-    /**
-     * Build attributes based on the the $search_attributes array on the model.
-     *
-     * @param Model $model
-     * @param array &$result
-     *
-     * @return void
-     */
-    private static function buildSearchAttributes($model, &$result)
-    {
-        // Apply any custom attributes that have been specified.
-        foreach ($model->getSearchAttributes() as $name => $settings) {
-            // Specified name or use key.
-            $title = array_get($settings, 'title', $name);
-
-            if ($title === $name) {
-                $title = title_case($title);
-            }
-
-            // Specified attributes, or attribute.
-            $attributes = array_get($settings, 'attributes', array_get('settings', 'attribute', []));
-
-            self::validateAttributes($model, $name, $attributes);
-
-            // Allocate.
-            $result[$name] = [
-                'name'       => $name,
-                'title'      => $title,
-                'attributes' => $attributes,
-                'filter'     => array_get($settings, 'filter', 'string'),
-                'enable'     => array_get($settings, 'enable', []),
-                'model'      => &$model,
-                'model_name' => 'self',
+                'model_name' => $model_name,
             ];
         }
     }
@@ -276,6 +329,52 @@ class ModelSearch
         }
 
         return $cast;
+    }
+
+    /**
+     * Build attributes based on the the $search_attributes array on the model.
+     *
+     * @param Model           $model
+     * @param array           &$result
+     * @param nullable|string $method
+     *
+     * @return void
+     */
+    private static function buildSearchAttributes($model, &$result, $method = null)
+    {
+        $model_name = 'self';
+        $name_append = '';
+
+        if (!is_null($method)) {
+            $model_name = $method;
+            $name_append = $method.'.';
+        }
+
+        // Apply any custom attributes that have been specified.
+        foreach ($model->getSearchAttributes() as $name => $settings) {
+            // Specified name or use key.
+            $title = array_get($settings, 'title', $name);
+
+            if ($title === $name) {
+                $title = title_case($title);
+            }
+
+            // Specified attributes, or attribute.
+            $attributes = array_get($settings, 'attributes', array_get('settings', 'attribute', []));
+
+            self::validateAttributes($model, $name, $attributes);
+
+            // Allocate.
+            $result[$name_append.$name] = [
+                'name'       => $name,
+                'title'      => $title,
+                'attributes' => $attributes,
+                'filter'     => array_get($settings, 'filter', 'string'),
+                'enable'     => array_get($settings, 'enable', []),
+                'model'      => &$model,
+                'model_name' => $model_name,
+            ];
+        }
     }
 
     /**
@@ -302,21 +401,6 @@ class ModelSearch
                 $value = new Expression(substr($value, 1));
             }
         }
-    }
-
-    /**
-     * Build a list of all possible relationships.
-     *
-     * @return void
-     *
-     * @SuppressWarnings(PHPMD.LongVariable)
-     */
-    private function buildRelationships()
-    {
-        // Specified relationships.
-        $search_relationships = $this->model->getSearchRelationships();
-
-        // Auto discover relationships.
     }
 
     /**
@@ -361,12 +445,12 @@ class ModelSearch
 
             // Search against an model via relationship.
             $models_used[$model_name] = true;
-            $this->query->search_models[$model_name][$name] = $filters;
+            $this->search_models[$model_name][$name] = $filters;
         }
 
         // Join the models to this query.
         if (count($models_used)) {
-            $this->query->modelJoin($models_used);
+            $this->modelJoin($models_used);
         }
     }
 
@@ -840,69 +924,32 @@ class ModelSearch
             $this->query->selectRaw('DISTINCT '.$this->model->getTable().'.*');
         }
 
-        foreach ($relationships as $relation_name) {
-            $relation = $this->model->$relation_name();
-            $relation_method = basename(str_replace('\\', '/', get_class($relation)));
-            $table = $relation->getTable();
+        foreach ($relationships as $relation_name => $load_relationship) {
 
-            if ($relation_method === 'HasOne' || $relation_method === 'BelongsTo') {
-                $table = $relation->getRelated()->getTable();
-            }
+            // Required variables.
+            $model = array_get($this->relationships, $relation_name.'.model');
+            $method = array_get($this->relationships, $relation_name.'.method');
+            $table = array_get($this->relationships, $relation_name.'.table');
+            $parent_key = array_get($this->relationships, $relation_name.'.parent_key');
+            $foreign_key = array_get($this->relationships, $relation_name.'.foreign_key');
 
-            list($parent_key, $foreign_key) = $this->getTableKeys($relation_method);
-
-            foreach (Schema::getColumnListing($table) as $related_column) {
-                $this->query->addSelect(new Expression("`$table`.`$related_column` AS `$table.$related_column`"));
-            }
-
+            // Add the columns from the other table.
+            // @todo do we need this?
+            //$this->query->addSelect(new Expression("`$table`.*"));
             $this->query->join($table, $parent_key, $operator, $foreign_key, $type, $where);
 
-            if ($relation_method === 'BelongsToMany') {
-                $related_foreign_key = $relation->getQualifiedRelatedKeyName();
-                $related_relation = $relation->getRelated();
+            // The join above is to the intimidatory table. This joins the query to the actual model.
+            if ($method === 'BelongsToMany') {
+                $related_foreign_key = $model->getQualifiedRelatedKeyName();
+                $related_relation = $model->getRelated();
                 $related_table = $related_relation->getTable();
                 $related_qualified_key_name = $related_relation->getQualifiedKeyName();
                 $this->query->join($related_table, $related_qualified_key_name, $operator, $related_foreign_key, $type, $where);
             }
         }
 
+        // Group by the original model.
         $this->query->groupBy($this->model->getQualifiedKeyName());
-    }
-
-    /**
-     * Get the table keys based on the relationship.
-     *
-     * @param string $relation_method
-     *
-     * @return array
-     */
-    private function getTableKeys($relation_method)
-    {
-        switch ($relation_method) {
-            case 'BelongsTo':
-                $parent_key = $relation->getQualifiedForeignKey();
-                $foreign_key = $relation->getQualifiedOwnerKeyName();
-            break;
-            case 'HasOne':
-                $parent_key = $table.'.'.$relation->getParentKey();
-                $foreign_key = $table.'.'.$relation->getForeignKey();
-            break;
-            case 'HasMany':
-                $parent_key = $relation->getQualifiedOwnerKeyName();
-                $foreign_key = $relation->getQualifiedForeignKey();
-            break;
-            case 'BelongsToMany':
-                $parent_key = $relation->getQualifiedParentKeyName();
-                $foreign_key = $relation->getQualifiedForeignKeyName();
-            break;
-            default:
-                return ['', ''];
-        }
-
-        return [
-            $parent_key,
-            $foreign_key,
-        ];
     }
 
     /**

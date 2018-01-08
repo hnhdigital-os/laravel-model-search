@@ -342,4 +342,16 @@ class ModelTest extends TestCase
         $query = MockModel::search(['is_enabled' => [['!=', false]]]);
         $this->assertEquals($this->sql_begins_with.' where ("mock_model"."is_enabled" != \'0\')', $this->getSql($query));
     }
+
+    /**
+     * Assert the available relationships builds correctly.
+     *
+     * @return void
+     */
+    public function testAvailableRelationships()
+    {
+        // Wildcard by default.
+        $query = MockModel::search(['otherMockModel.title' => 'Test']);
+        $this->assertEquals('select DISTINCT mock_model.* from "mock_model" left join "other_mock_model" on "mock_model"."id" = "other_mock_model"."mock_model_id" where exists (select * from "other_mock_model" where "mock_model"."id" = "other_mock_model"."mock_model_id" and ("other_mock_model"."title" like \'%Test%\')) group by "mock_model"."id"', $this->getSql($query));
+    }
 }
