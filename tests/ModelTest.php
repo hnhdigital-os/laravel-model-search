@@ -267,7 +267,7 @@ class ModelTest extends TestCase
         $this->assertEquals($this->sql_begins_with.' where ("mock_model"."total" in (\'1\', \'2\'))', $this->getSql($query));
 
         // Number is in a list.
-        $query = MockModel::search(['total' => [['IN', [1,2]]]]);
+        $query = MockModel::search(['total' => [['IN', [1, 2]]]]);
         $this->assertEquals($this->sql_begins_with.' where ("mock_model"."total" in (\'1\', \'2\'))', $this->getSql($query));
 
         // Number is not in a list.
@@ -322,7 +322,7 @@ class ModelTest extends TestCase
         $query = MockModel::search(['is_enabled' => '0']);
         $this->assertEquals($this->sql_begins_with.' where ("mock_model"."is_enabled" = \'0\')', $this->getSql($query));
 
-       // Is false.
+        // Is false.
         $query = MockModel::search(['is_enabled' => [false]]);
         $this->assertEquals($this->sql_begins_with.' where ("mock_model"."is_enabled" = \'0\')', $this->getSql($query));
 

@@ -3,7 +3,6 @@
 namespace HnhDigital\ModelSearch;
 
 use Illuminate\Database\Query\Expression;
-use Illuminate\Database\Schema\Builder as Schema;
 
 class ModelSearch
 {
@@ -213,8 +212,6 @@ class ModelSearch
             self::buildCastedAttributes($relation['model'], $result, $method);
             self::buildSearchAttributes($relation['model'], $result, $method);
         }
-
-
 
         return $result;
     }
@@ -545,7 +542,7 @@ class ModelSearch
      * Get the default operator.
      *
      * @param string $filter
-     * 
+     *
      * @return string
      */
     public static function getDefaultOperator($filter, $operator)
