@@ -2,6 +2,7 @@
 
 namespace HnhDigital\ModelSearch;
 
+use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Expression;
 use Schema;
 
@@ -34,7 +35,7 @@ class ModelSearch
         '=*'        => ['value' => '=*', 'name' => 'Begins with'],
         '!=*'       => ['value' => '!=*', 'name' => 'Does not begin with'],
         '*='        => ['value' => '*=', 'name' => 'Ends with'],
-        '*!='       => ['value' => '*!=', 'name' => 'Does not end with'],
+        '!*='       => ['value' => '*!=', 'name' => 'Does not end with'],
         'IN'        => ['value' => 'IN', 'name' => 'In...', 'helper' => 'Separated by semi-colon'],
         'NOT_IN'    => ['value' => 'NOT_IN', 'name' => 'Not in...', 'helper' => 'Separated by semi-colon'],
         'EMPTY'     => ['value' => 'EMPTY', 'name' => 'Empty'],
@@ -378,6 +379,8 @@ class ModelSearch
         }
 
         self::checkInlineOperator($operator, $value_one);
+        self::checkNullOperator($operator, $value_one);
+        self::checkEmptyOperator($operator, $value_one);
 
         // Defaullt operator.
         if (empty($operator)) {
@@ -416,6 +419,38 @@ class ModelSearch
     {
         $value_array = str_split(str_replace(' ', '', $value));
         $value = '%'.implode('%', $value_array).'%';
+    }
+
+    /**
+     * Check the value for null or not null.
+     *
+     * @param string &$operator
+     * @param string &$value
+     *
+     * @return void
+     */
+    public static function checkNullOperator(&$operator, &$value)
+    {
+        if ($value === 'NULL' || $value === 'NOT_NULL') {
+            $operator = $value;
+            $value = '';
+        }
+    }
+
+    /**
+     * Check the value for empty or not empty.
+     *
+     * @param string &$operator
+     * @param string &$value
+     *
+     * @return void
+     */
+    public static function checkEmptyOperator(&$operator, &$value)
+    {
+        if ($value === 'EMPTY' || $value === 'NOT_EMPTY') {
+            $operator = $value;
+            $value = '';
+        }
     }
 
     /**
@@ -462,7 +497,7 @@ class ModelSearch
                 $arguments = [$operator, '%'.$value_one.'%'];
                 break;
             case '*=':
-            case '*!=':
+            case '!*=':
                 $operator = (stripos($operator, '!') !== false) ? 'NOT ' : '';
                 $operator .= 'LIKE';
                 $arguments = [$operator, '%'.$value_one];
@@ -475,18 +510,18 @@ class ModelSearch
                 break;
             case 'EMPTY':
                 $method = 'whereRaw';
-                $arguments = "=''";
+                $arguments = "%s = ''";
                 break;
             case 'NOT_EMPTY':
                 $method = 'whereRaw';
-                $arguments = "!=''";
+                $arguments = "%s != ''";
                 break;
             case 'IN':
                 $method = 'whereIn';
                 $arguments = [static::getListFromString($value_one)];
                 break;
             case 'NOT_IN':
-                $method = 'whereIn';
+                $method = 'whereNotIn';
                 $arguments = [static::getListFromString($value_one)];
                 break;
             case 'NULL':
@@ -767,24 +802,61 @@ class ModelSearch
     {
         foreach ($search as $name => $filters) {
             foreach ($filters as $filter) {
-                $method = array_get($filter, 'method');
-                $arguments = array_get($filter, 'arguments');
-                $attributes = array_get($filter, 'settings.attributes');
-                array_unshift($arguments, '');
-
-                $query->where(function ($query) use ($attributes, $method, $arguments) {
-                    $count = 0;
-                    foreach ($attributes as $attribute_name) {
-                        $arguments[0] = $attribute_name;
-                        $query->$method(...$arguments);
-                        if ($count === 0) {
-                            $method = 'or'.studly_case($method);
-                        }
-                        $count++;
-                    }
-                });
+                self::applySearchFilter($query, $filter);
             }
         }
+    }
+
+    /**
+     * Apply the filter item.
+     *
+     * @return void
+     */
+    private static function applySearchFilter(&$query, $filter)
+    {
+        $method = array_get($filter, 'method');
+        $arguments = array_get($filter, 'arguments');
+        $attributes = array_get($filter, 'settings.attributes');
+
+        if (is_array($arguments)) {
+            array_unshift($arguments, '');
+        }
+
+        $query->where(function ($query) use ($attributes, $method, $arguments) {
+            $count = 0;
+            foreach ($attributes as $attribute_name) {
+                // Place attribute name into argument.
+                if (is_array($arguments)) {
+                    $arguments[0] = $attribute_name;
+
+                // Argument is raw and using sprintf.
+                } elseif (!is_array($arguments)) {
+                    $arguments = [sprintf($arguments, self::quoteIdentifier($attribute_name))];
+                }
+
+                $query->$method(...$arguments);
+
+                // Apply an or to the where.
+                if ($count === 0) {
+                    $method = 'or'.studly_case($method);
+                }
+
+                $count++;
+            }
+        });
+    }
+
+    /**
+     * Quote a database identifier.
+     *
+     * @param string $str
+     *
+     * @return string
+     */
+    private static function quoteIdentifier($str)
+    {
+        $str = str_replace(['"', "'"], '', $str);
+        return preg_replace("/((\w+)([\.]?))/", '"$2"$3', $str);
     }
 
     /**
