@@ -241,7 +241,7 @@ class ModelSearch
      *
      * @return string
      */
-    private function convertCast($cast)
+    private static function convertCast($cast)
     {
         switch ($cast) {
             case 'numeric':
