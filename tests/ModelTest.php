@@ -80,7 +80,19 @@ class ModelTest extends TestCase
 
         // Wildcard by default.
         $query = MockModel::search(['title' => 'Test']);
-        $this->assertEquals($sql_begins_with.'("mock_model"."title" LIKE \'%Test%\')', $this->getSql($query));
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" like \'%Test%\')', $this->getSql($query));
+
+        // Wildcard by default - using array of values.
+        $query = MockModel::search(['title' => ['Test']]);
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" like \'%Test%\')', $this->getSql($query));
+
+        // Wildcard by default - using array of values.
+        $query = MockModel::search(['title' => ['Test', 'Test1']]);
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" like \'%Test%\') and ("mock_model"."title" like \'%Test1%\')', $this->getSql($query));
+
+        // Wildcard by default - using array of values.
+        $query = MockModel::search(['title' => [['Test']]]);
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" like \'%Test%\')', $this->getSql($query));
 
         // Operators via array.
 
@@ -94,23 +106,27 @@ class ModelTest extends TestCase
 
         // String like bothside wildcard.
         $query = MockModel::search(['title' => [['*=*', 'Test']]]);
-        $this->assertEquals($sql_begins_with.'("mock_model"."title" LIKE \'%Test%\')', $this->getSql($query));
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" like \'%Test%\')', $this->getSql($query));
+
+        // String like bothside wildcard.
+        $query = MockModel::search(['title' => [['*!=*', 'Test']]]);
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" not like \'%Test%\')', $this->getSql($query));
 
         // String like left wildcard.
         $query = MockModel::search(['title' => [['*=', 'Test']]]);
-        $this->assertEquals($sql_begins_with.'("mock_model"."title" LIKE \'%Test\')', $this->getSql($query));
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" like \'%Test\')', $this->getSql($query));
 
         // String not like left wildcard.
-        $query = MockModel::search(['title' => [['!*=', 'Test']]]);
-        $this->assertEquals($sql_begins_with.'("mock_model"."title" NOT LIKE \'%Test\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['*!=', 'Test']]]);
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" not like \'%Test\')', $this->getSql($query));
 
         // String like right wildcard.
         $query = MockModel::search(['title' => [['=*', 'Test']]]);
-        $this->assertEquals($sql_begins_with.'("mock_model"."title" LIKE \'Test%\')', $this->getSql($query));
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" like \'Test%\')', $this->getSql($query));
 
         // String not like right wildcard.
         $query = MockModel::search(['title' => [['!=*', 'Test']]]);
-        $this->assertEquals($sql_begins_with.'("mock_model"."title" NOT LIKE \'Test%\')', $this->getSql($query));
+        $this->assertEquals($sql_begins_with.'("mock_model"."title" not like \'Test%\')', $this->getSql($query));
 
         // String in list (single).
         $query = MockModel::search(['title' => [['IN', 'Test']]]);
@@ -151,6 +167,22 @@ class ModelTest extends TestCase
         // String is empty.
         $query = MockModel::search(['title' => ['EMPTY']]);
         $this->assertEquals($sql_begins_with.'("mock_model"."title" = \'\')', $this->getSql($query));
+
+        // Search for a "phone number"
+        $query = MockModel::search(['phone' => '1234 56 789']);
+        $this->assertEquals($sql_begins_with.'("mock_model"."phone" like \'%1%2%3%4%5%6%7%8%9%\')', $this->getSql($query));
+
+        // Search for a "phone number"
+        $query = MockModel::search(['phone' => ['1234 56 789']]);
+        $this->assertEquals($sql_begins_with.'("mock_model"."phone" like \'%1%2%3%4%5%6%7%8%9%\')', $this->getSql($query));
+
+        // Search for a "phone number", convert any operator to wild card search.
+        $query = MockModel::search(['phone' => [['=', '1234 56 789']]]);
+        $this->assertEquals($sql_begins_with.'("mock_model"."phone" like \'%1%2%3%4%5%6%7%8%9%\')', $this->getSql($query));
+
+        // Search for a "phone number", convert any operator to wild card search.
+        $query = MockModel::search(['phone' => [['!=', '1234 56 789']]]);
+        $this->assertEquals($sql_begins_with.'("mock_model"."phone" not like \'%1%2%3%4%5%6%7%8%9%\')', $this->getSql($query));
     }
 
     /**

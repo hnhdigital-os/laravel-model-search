@@ -19,6 +19,8 @@ class MockModel extends Model
     protected $casts = [
         'id'    => 'integer',
         'title' => 'string',
+        'name'  => 'string',
+        'phone' => 'string',
     ];
 
     /**
@@ -29,8 +31,15 @@ class MockModel extends Model
     protected $search_attributes = [
         'lookup' => [
             'title'      => 'Name',
-            'attributes' => 'mock_model.title',
+            'attributes' => ['mock_model.name', 'mock_model.title'],
             'filter'     => 'string',
+        ],
+        'phone' => [
+            'attributes' => 'mock_model.phone',
+            'filter'     => 'string',
+            'enable'     => [
+                'wild-all' => true,
+            ],
         ],
     ];
 }

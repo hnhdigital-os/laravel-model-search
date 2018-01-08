@@ -226,6 +226,7 @@ class ModelSearch
                 'title'      => $title,
                 'attributes' => $attributes,
                 'filter'     => array_get($settings, 'filter', 'string'),
+                'enable'     => array_get($settings, 'enable', []),
                 'model'      => &$model,
                 'model_name' => 'self',
             ];
@@ -367,6 +368,11 @@ class ModelSearch
             $filter = ['', $filter];
         }
 
+        // Convert string to filter array.
+        if (count($filter) == 1) {
+            array_unshift($filter, '');
+        }
+
         // Split the filter array into operator, value1, value2
         $operator = array_get($filter, 0, '');
         $value_one = array_get($filter, 1, false);
@@ -375,10 +381,10 @@ class ModelSearch
         // The wild-all setting was enabled.
         // Update value with all characters wildcarded.
         if (array_has($settings, 'enable.wild-all')) {
-            self::applyWildAll($value_one);
+            self::applyWildAll($operator, $value_one);
         }
 
-        self::checkInlineOperator($operator, $value_one);
+        self::checkInlineOperator($operator, $value_one, $settings);
         self::checkNullOperator($operator, $value_one);
         self::checkEmptyOperator($operator, $value_one);
 
@@ -415,10 +421,12 @@ class ModelSearch
      *
      * @return void
      */
-    public static function applyWildAll(&$value)
+    public static function applyWildAll(&$operator, &$value)
     {
+        $positive = !(stripos($operator, '!') !== false || stripos($operator, 'NOT') !== false);
+        $operator = $positive ? '*=*' : '*!=*';
         $value_array = str_split(str_replace(' ', '', $value));
-        $value = '%'.implode('%', $value_array).'%';
+        $value = implode('%', $value_array);
     }
 
     /**
@@ -461,7 +469,7 @@ class ModelSearch
      *
      * @return void
      */
-    public static function checkInlineOperator(&$operator, &$value)
+    public static function checkInlineOperator(&$operator, &$value, $settings)
     {
         $value_array = explode(' ', trim($value), 2);
 
@@ -469,8 +477,12 @@ class ModelSearch
             return;
         }
 
-        $operator = array_shift($value_array);
-        $value = array_shift($value_array);
+        $check_operator = array_shift($value_array);
+
+        if (self::checkOperator($settings['filter'], $check_operator)) {
+            $operator = $check_operator;
+            $value = array_shift($value_array);
+        }
     }
 
     /**
@@ -492,20 +504,20 @@ class ModelSearch
                 break;
             case '*=*':
             case '*!=*':
-                $operator = (stripos($operator, '!') !== false) ? 'NOT ' : '';
-                $operator .= 'LIKE';
+                $operator = (stripos($operator, '!') !== false) ? 'not ' : '';
+                $operator .= 'like';
                 $arguments = [$operator, '%'.$value_one.'%'];
                 break;
             case '*=':
-            case '!*=':
-                $operator = (stripos($operator, '!') !== false) ? 'NOT ' : '';
-                $operator .= 'LIKE';
+            case '*!=':
+                $operator = (stripos($operator, '!') !== false) ? 'not ' : '';
+                $operator .= 'like';
                 $arguments = [$operator, '%'.$value_one];
                 break;
             case '=*':
             case '!=*':
-                $operator = (stripos($operator, '!') !== false) ? 'NOT ' : '';
-                $operator .= 'LIKE';
+                $operator = (stripos($operator, '!') !== false) ? 'not ' : '';
+                $operator .= 'like';
                 $arguments = [$operator, $value_one.'%'];
                 break;
             case 'EMPTY':
@@ -874,26 +886,52 @@ class ModelSearch
     }
 
     /**
+     * Check if a given type/operator is available.
+     *
+     * @param  string $type
+     * @param  string $operator
+     *
+     * @return bool
+     */
+    public static function checkOperator($type, $operator)
+    {
+        return in_array($operator, self::getAllowedOperators($type));
+    }
+
+    /**
+     * Get operators allowed for the given type.
+     *
+     * @param string $type
+     *
+     * @return array
+     */
+    public static function getAllowedOperators($type)
+    {
+        if (!in_array($type, self::$filter_types)) {
+            return [];
+        }
+
+        $data = self::getOperators($type);
+
+        return array_keys($data);
+    }
+
+    /**
      * Get an string|number|date operators as array|string.
      *
      * @param string|number|date $type
      * @param bool               $operator
      *
      * @return array|string|null
-     *
-     * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
      */
-    public static function getOperators($type, $operator = false)
+    public static function getOperators($type)
     {
-        $source = snake_case($type).'_operators';
-
-        if ($operator !== false && array_has($this->$source, $operator)) {
-            return array_get(self::$source, $operator);
-        } elseif ($operator !== false) {
-            return;
+        if (!in_array($type, self::$filter_types)) {
+            return [];
         }
 
-        return self::$source;
+        $source = snake_case($type).'_operators';
+        return self::$$source;
     }
 
     /**
