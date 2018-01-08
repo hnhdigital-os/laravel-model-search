@@ -26,20 +26,20 @@ class ModelSearch
      * @var array
      */
     protected static $string_operators = [
-        '*=*'       => ['value' => '*=*', 'name' => 'Contains'],
-        '*!=*'      => ['value' => '*!=*', 'name' => 'Not contain'],
-        '='         => ['value' => '=', 'name' => 'Equals'],
-        '!='        => ['value' => '!=', 'name' => 'Not equal'],
-        '=*'        => ['value' => '=*', 'name' => 'Begins with'],
-        '!=*'       => ['value' => '!=*', 'name' => 'Does not begin with'],
-        '*='        => ['value' => '*=', 'name' => 'Ends with'],
-        '!*='       => ['value' => '*!=', 'name' => 'Does not end with'],
-        'IN'        => ['value' => 'IN', 'name' => 'In...', 'helper' => 'Separated by semi-colon'],
-        'NOT_IN'    => ['value' => 'NOT_IN', 'name' => 'Not in...', 'helper' => 'Separated by semi-colon'],
-        'EMPTY'     => ['value' => 'EMPTY', 'name' => 'Empty'],
-        'NOT_EMPTY' => ['value' => 'NOT_EMPTY', 'name' => 'Not empty'],
-        'NULL'      => ['value' => 'NULL', 'name' => 'NULL'],
-        'NOT_NULL'  => ['value' => 'NOT_NULL', 'name' => 'Not NULL'],
+        '*=*'       => ['value' => '*=*', 'name' => 'Contains', 'inline' => 'contains'],
+        '*!=*'      => ['value' => '*!=*', 'name' => 'Not contain', 'inline' => 'does not contain'],
+        '='         => ['value' => '=', 'name' => 'Equals', 'inline' => 'is'],
+        '!='        => ['value' => '!=', 'name' => 'Not equal', 'inline' => 'is not'],
+        '=*'        => ['value' => '=*', 'name' => 'Begins with', 'inline' => 'begins with'],
+        '!=*'       => ['value' => '!=*', 'name' => 'Does not begin with', 'inline' => 'does not begin with'],
+        '*='        => ['value' => '*=', 'name' => 'Ends with', 'inline' => 'ends with'],
+        '!*='       => ['value' => '*!=', 'name' => 'Does not end with', 'does not end with'],
+        'IN'        => ['value' => 'IN', 'name' => 'In...', 'inline' => 'in', 'helper' => 'Separated by semi-colon'],
+        'NOT_IN'    => ['value' => 'NOT_IN', 'name' => 'Not in...', 'inline' => 'not in', 'helper' => 'Separated by semi-colon'],
+        'EMPTY'     => ['value' => 'EMPTY', 'name' => 'Empty', 'inline' => 'is empty'],
+        'NOT_EMPTY' => ['value' => 'NOT_EMPTY', 'name' => 'Not empty', 'inline' => 'is not empty'],
+        'NULL'      => ['value' => 'NULL', 'name' => 'NULL', 'inline' => 'is null'],
+        'NOT_NULL'  => ['value' => 'NOT_NULL', 'name' => 'Not NULL', 'inline' => 'is not null'],
     ];
 
     /**
@@ -150,19 +150,31 @@ class ModelSearch
     /**
      * Start a model search.
      */
-    public function __construct(&$query, $model, $request)
+    public function __construct()
     {
-        $this->query = $query;
-        $this->checkModel($model);
-        $this->checkRequest($request);
+
     }
 
     /**
-     * Process query.
+     * Process the search.
      *
      * @return void
      */
-    public function run()
+    public function run(&$query, $model, $request)
+    {
+        $this->query = $query;
+        $this->getAttributes($model);
+        $this->parseRequest($request);
+
+        return $this->query();
+    }
+
+    /**
+     * Run the query.
+     *
+     * @return builder
+     */
+    private function query()
     {
         foreach ($this->search_models as $model_name => $filters) {
             // Apply search against the original model.
@@ -185,11 +197,13 @@ class ModelSearch
      *
      * @return void
      */
-    private function checkModel($model)
+    public function getAttributes($model)
     {
         $this->model = $model;
         $this->attributes = self::buildRelationshipAttributes($this->model);
         $this->attributes = $this->attributes + self::buildAttributes($this->model);
+
+        return $this->attributes;
     }
 
     /**
@@ -405,7 +419,7 @@ class ModelSearch
      *
      * @return void
      */
-    private function checkRequest($request)
+    private function parseRequest($request)
     {
         if (empty($request)) {
             return;
@@ -566,12 +580,41 @@ class ModelSearch
      *
      * @return void
      */
-    public static function applyWildAll(&$operator, &$value)
+    private static function applyWildAll(&$operator, &$value)
     {
         $positive = !(stripos($operator, '!') !== false || stripos($operator, 'NOT') !== false);
         $operator = $positive ? '*=*' : '*!=*';
         $value_array = str_split(str_replace(' ', '', $value));
         $value = implode('%', $value_array);
+    }
+
+    /**
+     * Parse any inline operator.
+     *
+     * @return array
+     */
+    public static function parseInlineOperator($text)
+    {
+        // Convert string to filter array.
+        if (!is_array($text)) {
+            $text = ['', $text];
+        }
+
+        $operator_name = 'contains';
+        $operator = array_get($text, 0, '');
+        $value = array_get($text, 1, false);
+
+        self::checkInlineOperator($operator, $value);
+
+        if (!empty($operator)) {
+            $operator_name = array_get(self::getOperator('string', $operator), 'inline', 'contains');
+        }
+
+        return [
+            $operator_name,
+            $operator,
+            $value,
+        ];
     }
 
     /**
@@ -582,7 +625,7 @@ class ModelSearch
      *
      * @return void
      */
-    public static function checkInlineOperator(&$operator, &$value, $settings)
+    private static function checkInlineOperator(&$operator, &$value, $settings = [])
     {
         if (is_array($value)) {
             return;
@@ -601,7 +644,7 @@ class ModelSearch
 
         $check_operator = array_shift($value_array);
 
-        if (self::checkOperator($settings['filter'], $check_operator)) {
+        if (self::checkOperator(array_get($settings, 'filter', 'string'), $check_operator)) {
             $operator = $check_operator;
             $value = array_shift($value_array);
         }
@@ -1040,6 +1083,21 @@ class ModelSearch
     public static function checkOperator($type, $operator)
     {
         return in_array($operator, self::getAllowedOperators($type));
+    }
+
+    /**
+     * Get an operators details.
+     *
+     * @param string $type
+     * @param string $operator
+     *
+     * @return bool
+     */
+    public static function getOperator($type, $operator)
+    {
+        $operators = self::getOperators($type);
+
+        return array_get($operators, $operator,  []);
     }
 
     /**
