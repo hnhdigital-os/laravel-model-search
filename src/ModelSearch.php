@@ -927,11 +927,7 @@ class ModelSearch
      */
     public static function getTypes()
     {
-        if (isset(static::$filter_types) && is_array(static::$filter_types)) {
-            return static::$filter_types;
-        }
-
-        return [];
+        return static::$filter_types;
     }
 
     /**
@@ -975,7 +971,7 @@ class ModelSearch
      */
     public static function getOperators($type)
     {
-        if (!in_array($type, self::$filter_types)) {
+        if (!in_array($type, self::getTypes())) {
             return [];
         }
 
