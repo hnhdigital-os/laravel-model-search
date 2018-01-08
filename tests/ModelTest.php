@@ -278,20 +278,36 @@ class ModelTest extends TestCase
      */
     public function testSimpleBooleanSearches()
     {
-        // Equal by default.
+        // Is true.
         $query = MockModel::search(['is_enabled' => true]);
         $this->assertEquals($this->sql_begins_with.'("mock_model"."is_enabled" = \'1\')', $this->getSql($query));
 
-        // Number is equal.
+        // Is true.
         $query = MockModel::search(['is_enabled' => [true]]);
         $this->assertEquals($this->sql_begins_with.'("mock_model"."is_enabled" = \'1\')', $this->getSql($query));
 
-        // Number is not equal.
+        // Is false.
         $query = MockModel::search(['is_enabled' => false]);
         $this->assertEquals($this->sql_begins_with.'("mock_model"."is_enabled" = \'0\')', $this->getSql($query));
 
-        // Number is not equal.
+       // Is false.
         $query = MockModel::search(['is_enabled' => [false]]);
         $this->assertEquals($this->sql_begins_with.'("mock_model"."is_enabled" = \'0\')', $this->getSql($query));
+
+        // Is true.
+        $query = MockModel::search(['is_enabled' => [['=', true]]]);
+        $this->assertEquals($this->sql_begins_with.'("mock_model"."is_enabled" = \'1\')', $this->getSql($query));
+
+        // Is not true.
+        $query = MockModel::search(['is_enabled' => [['!=', true]]]);
+        $this->assertEquals($this->sql_begins_with.'("mock_model"."is_enabled" != \'1\')', $this->getSql($query));
+
+        // Is false.
+        $query = MockModel::search(['is_enabled' => [['=', false]]]);
+        $this->assertEquals($this->sql_begins_with.'("mock_model"."is_enabled" = \'0\')', $this->getSql($query));
+
+        // Is not false.
+        $query = MockModel::search(['is_enabled' => [['!=', false]]]);
+        $this->assertEquals($this->sql_begins_with.'("mock_model"."is_enabled" != \'0\')', $this->getSql($query));
     }
 }

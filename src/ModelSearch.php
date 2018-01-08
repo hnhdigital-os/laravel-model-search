@@ -79,8 +79,10 @@ class ModelSearch
      * @var array
      */
     protected static $boolean_operators = [
-        '1' => ['value' => '1', 'name' => 'True'],
-        '0' => ['value' => '0', 'name' => 'False'],
+        '1'  => ['value' => '1', 'name' => 'True'],
+        '0'  => ['value' => '0', 'name' => 'False'],
+        '='  => ['value' => '=', 'name' => 'Equals'],
+        '!=' => ['value' => '=', 'name' => 'Not equals'],
     ];
 
     /**
@@ -483,8 +485,6 @@ class ModelSearch
 
         // Boolean does not provide inline operations.
         if (array_get($settings, 'filter') === 'boolean') {
-            $value = (int) $value;
-            $operator = '=';
             return;
         }
 
@@ -675,11 +675,11 @@ class ModelSearch
         switch ($value_one) {
             case 1:
             case '1':
-                $arguments = ['=', 1];
+                $arguments = [$operator, 1];
                 break;
             case 0:
             case '0':
-                $arguments = ['=', 0];
+                $arguments = [$operator, 0];
                 break;
         }
 
