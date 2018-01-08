@@ -2,7 +2,6 @@
 
 namespace HnhDigital\ModelSearch;
 
-use Illuminate\Database\Capsule\Manager as DB;
 use Illuminate\Database\Query\Expression;
 use Schema;
 
@@ -917,6 +916,7 @@ class ModelSearch
     private static function quoteIdentifier($str)
     {
         $str = str_replace(['"', "'"], '', $str);
+
         return preg_replace("/((\w+)([\.]?))/", '"$2"$3', $str);
     }
 
@@ -937,8 +937,8 @@ class ModelSearch
     /**
      * Check if a given type/operator is available.
      *
-     * @param  string $type
-     * @param  string $operator
+     * @param string $type
+     * @param string $operator
      *
      * @return bool
      */
@@ -980,6 +980,7 @@ class ModelSearch
         }
 
         $source = snake_case($type).'_operators';
+
         return self::$$source;
     }
 
