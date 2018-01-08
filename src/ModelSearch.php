@@ -543,7 +543,13 @@ class ModelSearch
      */
     public static function filterByString($filter)
     {
-        extract($filter);
+        $operator = array_get($filter, 'operator');
+        $method = array_get($filter, 'method');
+        $arguments = array_get($filter, 'arguments');
+        $value_one = array_get($filter, 'value_one');
+        $value_two = array_get($filter, 'value_two');
+        $settings = array_get($filter, 'settings');
+        $positive = array_get($filter, 'positive');
 
         switch ($operator) {
             case '=':
@@ -613,7 +619,13 @@ class ModelSearch
      */
     public static function filterByNumber($filter)
     {
-        extract($filter);
+        $operator = array_get($filter, 'operator');
+        $method = array_get($filter, 'method');
+        $arguments = array_get($filter, 'arguments');
+        $value_one = array_get($filter, 'value_one');
+        $value_two = array_get($filter, 'value_two');
+        $settings = array_get($filter, 'settings');
+        $positive = array_get($filter, 'positive');
 
         switch ($operator) {
             case '=':
@@ -669,7 +681,13 @@ class ModelSearch
      */
     public static function filterByBoolean($filter)
     {
-        extract($filter);
+        $operator = array_get($filter, 'operator');
+        $method = array_get($filter, 'method');
+        $arguments = array_get($filter, 'arguments');
+        $value_one = array_get($filter, 'value_one');
+        $value_two = array_get($filter, 'value_two');
+        $settings = array_get($filter, 'settings');
+        $positive = array_get($filter, 'positive');
 
         switch ($value_one) {
             case 1:
@@ -703,7 +721,13 @@ class ModelSearch
      */
     public static function filterByListLookup($filter)
     {
-        extract($filter);
+        $operator = array_get($filter, 'operator');
+        $method = array_get($filter, 'method');
+        $arguments = array_get($filter, 'arguments');
+        $value_one = array_get($filter, 'value_one');
+        $value_two = array_get($filter, 'value_two');
+        $settings = array_get($filter, 'settings');
+        $positive = array_get($filter, 'positive');
 
         $value_one = [];
 
@@ -737,7 +761,13 @@ class ModelSearch
      */
     public static function filterByList($filter)
     {
-        extract($filter);
+        $operator = array_get($filter, 'operator');
+        $method = array_get($filter, 'method');
+        $arguments = array_get($filter, 'arguments');
+        $value_one = array_get($filter, 'value_one');
+        $value_two = array_get($filter, 'value_two');
+        $settings = array_get($filter, 'settings');
+        $positive = array_get($filter, 'positive');
 
         switch ($operator) {
             case 'IN':
