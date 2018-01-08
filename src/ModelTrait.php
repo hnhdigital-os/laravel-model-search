@@ -9,7 +9,7 @@ trait ModelTrait
      *
      * @return self
      */
-    public function scopeSearch(&$query, $request)
+    public function scopeSearch(&$query, $request = [])
     {
         return (new ModelSearch($query, $this, $request))->run($query);
     }

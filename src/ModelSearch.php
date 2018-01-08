@@ -195,6 +195,22 @@ class ModelSearch
     {
         $result = [];
 
+        self::buildCastedAttributes($model, $result);
+        self::buildSearchAttributes($model, $result);
+
+        return $result;
+    }
+
+    /**
+     * Build attributes based on the casts array on the model.
+     *
+     * @param Model $model
+     * @param array &$result
+     *
+     * @return void
+     */
+    private static function buildCastedAttributes($model, &$result)
+    {
         // Build attributes off the specified casts.
         foreach ($model->getCasts() as $name => $cast) {
             $result[$name] = [
@@ -206,7 +222,18 @@ class ModelSearch
                 'model_name' => 'self',
             ];
         }
+    }
 
+    /**
+     * Build attributes based on the the $search_attributes array on the model.
+     *
+     * @param Model $model
+     * @param array &$result
+     *
+     * @return void
+     */
+    private static function buildSearchAttributes($model, &$result)
+    {
         // Apply any custom attributes that have been specified.
         foreach ($model->getSearchAttributes() as $name => $settings) {
             // Specified name or use key.
@@ -232,8 +259,6 @@ class ModelSearch
                 'model_name' => 'self',
             ];
         }
-
-        return $result;
     }
 
     /**
@@ -320,13 +345,13 @@ class ModelSearch
             // Get the settings for the given attribute.
             $settings = array_get($this->attributes, $name);
 
-            // Check and validate each of the filters.
-            $filters = self::validateFilters($filters, $settings);
-
-            // Filter did not pass validation.
-            if (empty($filters)) {
+            // Settings is empty.
+            if (empty($settings)) {
                 continue;
             }
+
+            // Check and validate each of the filters.
+            $filters = self::validateFilters($filters, $settings);
 
             // Search against current model.
             if (($model_name = array_get($settings, 'model_name')) === 'self') {

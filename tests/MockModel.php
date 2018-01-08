@@ -43,5 +43,6 @@ class MockModel extends Model
                 'wild-all' => true,
             ],
         ],
+        'title2' => [],
     ];
 }
