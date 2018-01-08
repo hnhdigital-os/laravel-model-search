@@ -26,7 +26,7 @@
             "composer phpunit && composer phpcs && composer phpmd"
         ],
         "phpunit": [
-            "phpunit --coverage-clover 'build/logs/clover.xml'"
+            "phpunit"
         ],
         "phpcs": [
             "phpcs -p -s --standard=PSR2 ./src ./tests"
