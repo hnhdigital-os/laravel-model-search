@@ -67,11 +67,9 @@ class MockModel extends Model
 
     public function scopeSomething()
     {
-
     }
 
     public function getSomeThingAttribute()
     {
-        
     }
 }
