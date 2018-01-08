@@ -11,7 +11,17 @@ trait ModelTrait
      */
     public function scopeSearch(&$query, $request = [])
     {
-        return (new ModelSearch($query, $this, $request))->run($query);
+        return (new ModelSearch())->run($query, $this, $request);
+    }
+
+    /**
+     * Get the search attributes.
+     *
+     * @return array
+     */
+    public function getSearchableAttributes()
+    {
+        return (new ModelSearch())->getAttributes($this);
     }
 
     /**
