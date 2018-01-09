@@ -152,7 +152,6 @@ class ModelSearch
      */
     public function __construct()
     {
-
     }
 
     /**
@@ -1097,7 +1096,7 @@ class ModelSearch
     {
         $operators = self::getOperators($type);
 
-        return array_get($operators, $operator,  []);
+        return array_get($operators, $operator, []);
     }
 
     /**
