@@ -370,7 +370,7 @@ class ModelSearch
             }
 
             // Specified attributes, or attribute.
-            $attributes = array_get($settings, 'attributes', array_get('settings', 'attribute', []));
+            $attributes = array_get($settings, 'attributes', array_get($settings, 'attribute', []));
 
             self::validateAttributes($model, $name, $attributes);
 
