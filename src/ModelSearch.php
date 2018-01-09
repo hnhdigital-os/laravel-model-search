@@ -1018,12 +1018,13 @@ class ModelSearch
         $method = array_get($filter, 'method');
         $arguments = array_get($filter, 'arguments');
         $attributes = array_get($filter, 'settings.attributes');
+        $positive = array_get($filter, 'positive');
 
         if (is_array($arguments)) {
             array_unshift($arguments, '');
         }
 
-        $query->where(function ($query) use ($attributes, $method, $arguments) {
+        $query->where(function ($query) use ($attributes, $method, $arguments, $positive) {
             $count = 0;
             foreach ($attributes as $attribute_name) {
                 // Place attribute name into argument.
@@ -1038,7 +1039,7 @@ class ModelSearch
                 $query->$method(...$arguments);
 
                 // Apply an or to the where.
-                if ($count === 0) {
+                if ($count === 0 && $positive) {
                     $method = 'or'.studly_case($method);
                 }
 

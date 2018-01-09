@@ -208,6 +208,22 @@ class ModelTest extends TestCase
     }
 
     /**
+     * Assert a number of advanced string searches.
+     *
+     * @return void
+     */
+    public function testAdvancedStringSearches()
+    {
+        // Positive wildcard.
+        $query = MockModel::search(['lookup' => [['*=*', 'Test']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."name" like \'%Test%\' or "mock_model"."title" like \'%Test%\')', $this->getSql($query));
+
+        // Negative wildcard.
+        $query = MockModel::search(['lookup' => [['*!=*', 'Test']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."name" not like \'%Test%\' and "mock_model"."title" not like \'%Test%\')', $this->getSql($query));
+    }
+
+    /**
      * Assert a number of inline searches.
      *
      * @return void
