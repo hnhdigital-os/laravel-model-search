@@ -407,7 +407,7 @@ class ModelSearch
         // Check each of the attribute values.
         // Convert any prepended with a curly to an expression.
         foreach ($attributes as &$value) {
-            if (substr($value, 0) === '{') {
+            if (substr($value, 0, 1) === '{') {
                 $value = new Expression(substr($value, 1));
             }
         }
