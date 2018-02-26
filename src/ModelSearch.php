@@ -21,6 +21,20 @@ class ModelSearch
     ];
 
     /**
+     * UUID operators.
+     *
+     * @var array
+     */
+    protected static $uuid_operators = [
+        '='         => ['value' => '=', 'name' => 'Equals', 'inline' => 'is'],
+        '!='        => ['value' => '!=', 'name' => 'Not equal', 'inline' => 'is not'],
+        'IN'        => ['value' => 'IN', 'name' => 'In...', 'inline' => 'in', 'helper' => 'Separated by semi-colon'],
+        'NOT_IN'    => ['value' => 'NOT_IN', 'name' => 'Not in...', 'inline' => 'not in', 'helper' => 'Separated by semi-colon'],
+        'NULL'      => ['value' => 'NULL', 'name' => 'NULL', 'inline' => 'is null'],
+        'NOT_NULL'  => ['value' => 'NOT_NULL', 'name' => 'Not NULL', 'inline' => 'is not null'],
+    ];
+
+    /**
      * String operators.
      *
      * @var array
@@ -264,7 +278,7 @@ class ModelSearch
             break;
             case 'HasOne':
                 $parent_key = $table.'.'.$relation->getParentKey();
-                $foreign_key = $table.'.'.$relation->getForeignKey();
+                $foreign_key = $table.'.'.$relation->getForeignKeyName();
             break;
         }
 
@@ -309,6 +323,27 @@ class ModelSearch
         if (!is_null($method)) {
             $model_name = $method;
             $name_append = $method.'.';
+        }
+
+        // ModelSchema implementation gives us better data.
+        if (class_exists('HnhDigital\ModelSchema\Model')
+            && $model instanceOf \HnhDigital\ModelSchema\Model) {
+
+            // Build attributes off the schema.
+            foreach ($model->getSchema() as $name => $config) {
+                $result[$name_append.$name] = [
+                    'name'              => $name,
+                    'title'             => array_get($config, 'title', $name),
+                    'attributes'        => [sprintf('%s.%s', $model->getTable(), $name)],
+                    'filter'            => self::convertCast(array_get($config, 'cast')),
+                    'model'             => &$model,
+                    'model_name'        => $model_name,
+                    'source_model'      => array_get($config, 'model'),
+                    'source_model_name' => array_get($config, 'model_name', 'display_name'),
+                ];
+            }
+
+            return;
         }
 
         // Build attributes off the specified casts.
@@ -407,7 +442,7 @@ class ModelSearch
         // Check each of the attribute values.
         // Convert any prepended with a curly to an expression.
         foreach ($attributes as &$value) {
-            if (substr($value, 0, 1) === '{') {
+            if (substr($value, 0, 1) === '#' || substr($value, 0, 1) === '{') {
                 $value = new Expression(substr($value, 1));
             }
         }
@@ -561,6 +596,8 @@ class ModelSearch
     public static function getDefaultOperator($filter, $operator)
     {
         switch ($filter) {
+            case 'uuid':
+                return 'IN';
             case 'string':
                 return '*=*';
             case 'number':
@@ -594,11 +631,6 @@ class ModelSearch
      */
     public static function parseInlineOperator($text)
     {
-        // Convert string to filter array.
-        if (!is_array($text)) {
-            $text = ['', $text];
-        }
-
         $operator_name = 'contains';
         $operator = array_get($text, 0, '');
         $value = array_get($text, 1, false);
@@ -679,6 +711,52 @@ class ModelSearch
             $operator = $value;
             $value = '';
         }
+    }
+
+    /**
+     * Filter by UUID.
+     *
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    public static function filterByUuid($filter)
+    {
+        $operator = array_get($filter, 'operator');
+        $method = array_get($filter, 'method');
+        $arguments = array_get($filter, 'arguments');
+        $value_one = array_get($filter, 'value_one');
+        $value_two = array_get($filter, 'value_two');
+        $settings = array_get($filter, 'settings');
+        $positive = array_get($filter, 'positive');
+
+        switch ($operator) {
+            case 'IN':
+                $method = 'whereIn';
+                $arguments = [static::getListFromString($value_one)];
+                break;
+            case 'NOT_IN':
+                $method = 'whereNotIn';
+                $arguments = [static::getListFromString($value_one)];
+                break;
+            case 'NULL':
+                $method = 'whereNull';
+                break;
+            case 'NOT_NULL':
+                $method = 'whereNotNull';
+                break;
+        }
+
+        return [
+            'operator'  => $operator,
+            'method'    => $method,
+            'arguments' => $arguments,
+            'value_one' => $value_one,
+            'value_two' => $value_two,
+            'settings'  => $settings,
+            'positive'  => $positive,
+        ];
     }
 
     /**
