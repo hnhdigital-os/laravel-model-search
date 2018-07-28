@@ -416,6 +416,7 @@ class ModelSearch
                 'attributes' => $attributes,
                 'filter'     => array_get($settings, 'filter', 'string'),
                 'enable'     => array_get($settings, 'enable', []),
+                'source'     => array_get($settings, 'source', $name),
                 'model'      => &$model,
                 'model_name' => $model_name,
             ];
@@ -955,15 +956,19 @@ class ModelSearch
         $settings = array_get($filter, 'settings');
         $positive = array_get($filter, 'positive');
 
-        $value_one = [];
-
         if (array_has($filter, 'settings.source')) {
             $model = array_get($filter, 'settings.model');
-            $method_lookup = 'getFilter'.array_get($filter, 'settings.source').'Result';
+            $method_lookup = 'getFilter'.studly_case(array_get($filter, 'settings.source')).'Result';
 
             if (!empty($value_one) && method_exists($model, $method_lookup)) {
                 $value_one = $model->$method_lookup($value_one);
             }
+
+            $operator = 'IN';
+            $method = 'whereIn';
+            $arguments = [$value_one];
+        } else {
+            $value_one = [];
         }
 
         return [
