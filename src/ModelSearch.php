@@ -411,14 +411,16 @@ class ModelSearch
 
             // Allocate.
             $result[$name_append.$name] = [
-                'name'       => $name,
-                'title'      => $title,
-                'attributes' => $attributes,
-                'filter'     => array_get($settings, 'filter', 'string'),
-                'enable'     => array_get($settings, 'enable', []),
-                'source'     => array_get($settings, 'source', $name),
-                'model'      => &$model,
-                'model_name' => $model_name,
+                'name'              => $name,
+                'title'             => $title,
+                'attributes'        => $attributes,
+                'filter'            => array_get($settings, 'filter', 'string'),
+                'enable'            => array_get($settings, 'enable', []),
+                'source'            => array_get($settings, 'source', $name),
+                'model'             => &$model,
+                'model_name'        => $model_name,
+                'source_model'      => array_get($settings, 'model'),
+                'source_model_name' => array_get($settings, 'model_name', 'display_name'),
             ];
         }
     }
