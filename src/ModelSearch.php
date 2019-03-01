@@ -977,11 +977,17 @@ class ModelSearch
 
             $method_lookup = 'getFilter'.studly_case($source).'Result';
 
-            if (!empty($value_one) && method_exists($model, $method_lookup)) {
-                $value_one = $model->$method_lookup($value_one);
+            if (empty($value_one)) {
+                return false;
             }
 
-            if (is_null($value_one) || $value_one === false) {
+            if (method_exists($model, $method_lookup)) {
+                $value_one = $model->$method_lookup($value_one);
+            } else {
+                throw new \Exception(sprintf('%s is missing method %s', $model->getTable(), $method_lookup));
+            }
+
+            if ($value_one === false) {
                 return false;
             }
 
