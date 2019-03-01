@@ -339,6 +339,7 @@ class ModelSearch
                     'model'             => &$model,
                     'model_name'        => $model_name,
                     'source_model'      => array_get($config, 'model'),
+                    'source_model_key'  => array_get($config, 'model_key', null),
                     'source_model_name' => array_get($config, 'model_name', 'display_name'),
                 ];
             }
@@ -420,6 +421,7 @@ class ModelSearch
                 'model'             => &$model,
                 'model_name'        => $model_name,
                 'source_model'      => array_get($settings, 'model'),
+                'source_model_key'  => array_get($settings, 'model_key', null),
                 'source_model_name' => array_get($settings, 'model_name', 'display_name'),
             ];
         }
