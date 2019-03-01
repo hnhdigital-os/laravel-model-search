@@ -3,6 +3,7 @@
 namespace HnhDigital\ModelSearch;
 
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Arr;
 
 class ModelSearch
 {
@@ -333,14 +334,14 @@ class ModelSearch
             foreach ($model->getSchema() as $name => $config) {
                 $result[$name_append.$name] = [
                     'name'              => $name,
-                    'title'             => array_get($config, 'title', $name),
+                    'title'             => Arr::get($config, 'title', $name),
                     'attributes'        => [sprintf('%s.%s', $model->getTable(), $name)],
-                    'filter'            => self::convertCast(array_get($config, 'cast')),
+                    'filter'            => self::convertCast(Arr::get($config, 'cast')),
                     'model'             => &$model,
                     'model_name'        => $model_name,
-                    'source_model'      => array_get($config, 'model'),
-                    'source_model_key'  => array_get($config, 'model_key', null),
-                    'source_model_name' => array_get($config, 'model_name', 'display_name'),
+                    'source_model'      => Arr::get($config, 'model'),
+                    'source_model_key'  => Arr::get($config, 'model_key', null),
+                    'source_model_name' => Arr::get($config, 'model_name', 'display_name'),
                 ];
             }
 
@@ -399,14 +400,14 @@ class ModelSearch
         // Apply any custom attributes that have been specified.
         foreach ($model->getSearchAttributes() as $name => $settings) {
             // Specified name or use key.
-            $title = array_get($settings, 'title', $name);
+            $title = Arr::get($settings, 'title', $name);
 
             if ($title === $name) {
                 $title = title_case($title);
             }
 
             // Specified attributes, or attribute.
-            $attributes = array_get($settings, 'attributes', array_get($settings, 'attribute', []));
+            $attributes = Arr::get($settings, 'attributes', Arr::get($settings, 'attribute', []));
 
             self::validateAttributes($model, $name, $attributes);
 
@@ -415,14 +416,14 @@ class ModelSearch
                 'name'              => $name,
                 'title'             => $title,
                 'attributes'        => $attributes,
-                'filter'            => array_get($settings, 'filter', 'string'),
-                'enable'            => array_get($settings, 'enable', []),
-                'source'            => array_get($settings, 'source', $name),
+                'filter'            => Arr::get($settings, 'filter', 'string'),
+                'enable'            => Arr::get($settings, 'enable', []),
+                'source'            => Arr::get($settings, 'source', $name),
                 'model'             => &$model,
                 'model_name'        => $model_name,
-                'source_model'      => array_get($settings, 'model'),
-                'source_model_key'  => array_get($settings, 'model_key', null),
-                'source_model_name' => array_get($settings, 'model_name', 'display_name'),
+                'source_model'      => Arr::get($settings, 'model'),
+                'source_model_key'  => Arr::get($settings, 'model_key', null),
+                'source_model_name' => Arr::get($settings, 'model_name', 'display_name'),
             ];
         }
     }
@@ -472,12 +473,12 @@ class ModelSearch
         // Review each request.
         foreach ($this->request as $name => $filters) {
             // This name is not present in available attributes.
-            if (!array_has($this->attributes, $name)) {
+            if (!Arr::has($this->attributes, $name)) {
                 continue;
             }
 
             // Get the settings for the given attribute.
-            $settings = array_get($this->attributes, $name);
+            $settings = Arr::get($this->attributes, $name);
 
             // Settings is empty.
             if (empty($settings)) {
@@ -488,7 +489,7 @@ class ModelSearch
             $filters = self::validateFilters($filters, $settings);
 
             // Search against current model.
-            if (($model_name = array_get($settings, 'model_name')) === 'self') {
+            if (($model_name = Arr::get($settings, 'model_name')) === 'self') {
                 $this->search_models['self'][$name] = $filters;
                 continue;
             }
@@ -546,18 +547,18 @@ class ModelSearch
         }
 
         // Convert string to filter array.
-        if (array_get($settings, 'filter') !== 'boolean' && count($filter) == 1) {
+        if (Arr::get($settings, 'filter') !== 'boolean' && count($filter) == 1) {
             array_unshift($filter, '');
         }
 
         // Split the filter array into operator, value1, value2
-        $operator = array_get($filter, 0, '');
-        $value_one = array_get($filter, 1, false);
-        $value_two = array_get($filter, 2, false);
+        $operator = Arr::get($filter, 0, '');
+        $value_one = Arr::get($filter, 1, false);
+        $value_two = Arr::get($filter, 2, false);
 
         // The wild-all setting was enabled.
         // Update value with all characters wildcarded.
-        if (array_has($settings, 'enable.wild-all')) {
+        if (Arr::has($settings, 'enable.wild-all')) {
             self::applyWildAll($operator, $value_one);
         }
 
@@ -567,7 +568,7 @@ class ModelSearch
 
         // Defaullt operator.
         if (empty($operator)) {
-            $operator = self::getDefaultOperator(array_get($settings, 'filter'), $operator);
+            $operator = self::getDefaultOperator(Arr::get($settings, 'filter'), $operator);
         }
 
         // Return filter as an associative array.
@@ -582,7 +583,7 @@ class ModelSearch
         ];
 
         // Update filter based on the filter being used.
-        $validation_method = 'filterBy'.studly_case(array_get($settings, 'filter'));
+        $validation_method = 'filterBy'.studly_case(Arr::get($settings, 'filter'));
         $filter = self::{$validation_method}($filter);
 
         // Update based on operator.
@@ -637,13 +638,13 @@ class ModelSearch
     public static function parseInlineOperator($text)
     {
         $operator_name = 'contains';
-        $operator = array_get($text, 0, '');
-        $value = array_get($text, 1, false);
+        $operator = Arr::get($text, 0, '');
+        $value = Arr::get($text, 1, false);
 
         self::checkInlineOperator($operator, $value);
 
         if (!empty($operator)) {
-            $operator_name = array_get(self::getOperator('string', $operator), 'inline', 'contains');
+            $operator_name = Arr::get(self::getOperator('string', $operator), 'inline', 'contains');
         }
 
         return [
@@ -668,7 +669,7 @@ class ModelSearch
         }
 
         // Boolean does not provide inline operations.
-        if (array_get($settings, 'filter') === 'boolean') {
+        if (Arr::get($settings, 'filter') === 'boolean') {
             return;
         }
 
@@ -680,7 +681,7 @@ class ModelSearch
 
         $check_operator = array_shift($value_array);
 
-        if (self::checkOperator(array_get($settings, 'filter', 'string'), $check_operator)) {
+        if (self::checkOperator(Arr::get($settings, 'filter', 'string'), $check_operator)) {
             $operator = $check_operator;
             $value = array_shift($value_array);
         }
@@ -728,13 +729,13 @@ class ModelSearch
      */
     public static function filterByUuid($filter)
     {
-        $operator = array_get($filter, 'operator');
-        $method = array_get($filter, 'method');
-        $arguments = array_get($filter, 'arguments');
-        $value_one = array_get($filter, 'value_one');
-        $value_two = array_get($filter, 'value_two');
-        $settings = array_get($filter, 'settings');
-        $positive = array_get($filter, 'positive');
+        $operator = Arr::get($filter, 'operator');
+        $method = Arr::get($filter, 'method');
+        $arguments = Arr::get($filter, 'arguments');
+        $value_one = Arr::get($filter, 'value_one');
+        $value_two = Arr::get($filter, 'value_two');
+        $settings = Arr::get($filter, 'settings');
+        $positive = Arr::get($filter, 'positive');
 
         switch ($operator) {
             case 'IN':
@@ -774,13 +775,13 @@ class ModelSearch
      */
     public static function filterByString($filter)
     {
-        $operator = array_get($filter, 'operator');
-        $method = array_get($filter, 'method');
-        $arguments = array_get($filter, 'arguments');
-        $value_one = array_get($filter, 'value_one');
-        $value_two = array_get($filter, 'value_two');
-        $settings = array_get($filter, 'settings');
-        $positive = array_get($filter, 'positive');
+        $operator = Arr::get($filter, 'operator');
+        $method = Arr::get($filter, 'method');
+        $arguments = Arr::get($filter, 'arguments');
+        $value_one = Arr::get($filter, 'value_one');
+        $value_two = Arr::get($filter, 'value_two');
+        $settings = Arr::get($filter, 'settings');
+        $positive = Arr::get($filter, 'positive');
 
         switch ($operator) {
             case '=':
@@ -850,13 +851,13 @@ class ModelSearch
      */
     public static function filterByNumber($filter)
     {
-        $operator = array_get($filter, 'operator');
-        $method = array_get($filter, 'method');
-        $arguments = array_get($filter, 'arguments');
-        $value_one = array_get($filter, 'value_one');
-        $value_two = array_get($filter, 'value_two');
-        $settings = array_get($filter, 'settings');
-        $positive = array_get($filter, 'positive');
+        $operator = Arr::get($filter, 'operator');
+        $method = Arr::get($filter, 'method');
+        $arguments = Arr::get($filter, 'arguments');
+        $value_one = Arr::get($filter, 'value_one');
+        $value_two = Arr::get($filter, 'value_two');
+        $settings = Arr::get($filter, 'settings');
+        $positive = Arr::get($filter, 'positive');
 
         switch ($operator) {
             case '=':
@@ -912,13 +913,13 @@ class ModelSearch
      */
     public static function filterByBoolean($filter)
     {
-        $operator = array_get($filter, 'operator');
-        $method = array_get($filter, 'method');
-        $arguments = array_get($filter, 'arguments');
-        $value_one = array_get($filter, 'value_one');
-        $value_two = array_get($filter, 'value_two');
-        $settings = array_get($filter, 'settings');
-        $positive = array_get($filter, 'positive');
+        $operator = Arr::get($filter, 'operator');
+        $method = Arr::get($filter, 'method');
+        $arguments = Arr::get($filter, 'arguments');
+        $value_one = Arr::get($filter, 'value_one');
+        $value_two = Arr::get($filter, 'value_two');
+        $settings = Arr::get($filter, 'settings');
+        $positive = Arr::get($filter, 'positive');
 
         switch ($value_one) {
             case 1:
@@ -952,17 +953,17 @@ class ModelSearch
      */
     public static function filterByListLookup($filter)
     {
-        $operator = array_get($filter, 'operator');
-        $method = array_get($filter, 'method');
-        $arguments = array_get($filter, 'arguments');
-        $value_one = array_get($filter, 'value_one');
-        $value_two = array_get($filter, 'value_two');
-        $settings = array_get($filter, 'settings');
-        $positive = array_get($filter, 'positive');
+        $operator = Arr::get($filter, 'operator');
+        $method = Arr::get($filter, 'method');
+        $arguments = Arr::get($filter, 'arguments');
+        $value_one = Arr::get($filter, 'value_one');
+        $value_two = Arr::get($filter, 'value_two');
+        $settings = Arr::get($filter, 'settings');
+        $positive = Arr::get($filter, 'positive');
 
-        if (array_has($filter, 'settings.source')) {
-            $model = array_get($filter, 'settings.model');
-            $method_lookup = 'getFilter'.studly_case(array_get($filter, 'settings.source')).'Result';
+        if (Arr::has($filter, 'settings.source')) {
+            $model = Arr::get($filter, 'settings.model');
+            $method_lookup = 'getFilter'.studly_case(Arr::get($filter, 'settings.source')).'Result';
 
             if (!empty($value_one) && method_exists($model, $method_lookup)) {
                 $value_one = $model->$method_lookup($value_one);
@@ -996,13 +997,13 @@ class ModelSearch
      */
     public static function filterByList($filter)
     {
-        $operator = array_get($filter, 'operator');
-        $method = array_get($filter, 'method');
-        $arguments = array_get($filter, 'arguments');
-        $value_one = array_get($filter, 'value_one');
-        $value_two = array_get($filter, 'value_two');
-        $settings = array_get($filter, 'settings');
-        $positive = array_get($filter, 'positive');
+        $operator = Arr::get($filter, 'operator');
+        $method = Arr::get($filter, 'method');
+        $arguments = Arr::get($filter, 'arguments');
+        $value_one = Arr::get($filter, 'value_one');
+        $value_two = Arr::get($filter, 'value_two');
+        $settings = Arr::get($filter, 'settings');
+        $positive = Arr::get($filter, 'positive');
 
         switch ($operator) {
             case 'IN':
@@ -1053,11 +1054,11 @@ class ModelSearch
         foreach ($relationships as $relation_name => $load_relationship) {
 
             // Required variables.
-            $model = array_get($this->relationships, $relation_name.'.model');
-            $method = array_get($this->relationships, $relation_name.'.method');
-            $table = array_get($this->relationships, $relation_name.'.table');
-            $parent_key = array_get($this->relationships, $relation_name.'.parent_key');
-            $foreign_key = array_get($this->relationships, $relation_name.'.foreign_key');
+            $model = Arr::get($this->relationships, $relation_name.'.model');
+            $method = Arr::get($this->relationships, $relation_name.'.method');
+            $table = Arr::get($this->relationships, $relation_name.'.table');
+            $parent_key = Arr::get($this->relationships, $relation_name.'.parent_key');
+            $foreign_key = Arr::get($this->relationships, $relation_name.'.foreign_key');
 
             // Add the columns from the other table.
             // @todo do we need this?
@@ -1102,10 +1103,10 @@ class ModelSearch
      */
     private static function applySearchFilter(&$query, $filter)
     {
-        $method = array_get($filter, 'method');
-        $arguments = array_get($filter, 'arguments');
-        $attributes = array_get($filter, 'settings.attributes');
-        $positive = array_get($filter, 'positive');
+        $method = Arr::get($filter, 'method');
+        $arguments = Arr::get($filter, 'arguments');
+        $attributes = Arr::get($filter, 'settings.attributes');
+        $positive = Arr::get($filter, 'positive');
 
         if (is_array($arguments)) {
             array_unshift($arguments, '');
@@ -1184,7 +1185,7 @@ class ModelSearch
     {
         $operators = self::getOperators($type);
 
-        return array_get($operators, $operator, []);
+        return Arr::get($operators, $operator, []);
     }
 
     /**
