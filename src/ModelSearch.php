@@ -586,6 +586,10 @@ class ModelSearch
         $validation_method = 'filterBy'.studly_case(Arr::get($settings, 'filter'));
         $filter = self::{$validation_method}($filter);
 
+        if ($filter === false) {
+            return $filter;
+        }
+
         // Update based on operator.
         $filter['positive'] = !(stripos($operator, '!') !== false || stripos($operator, 'NOT') !== false);
 
@@ -955,6 +959,7 @@ class ModelSearch
     {
         $operator = Arr::get($filter, 'operator');
         $method = Arr::get($filter, 'method');
+        $source = Arr::get($filter, 'settings.source');
         $arguments = Arr::get($filter, 'arguments');
         $value_one = Arr::get($filter, 'value_one');
         $value_two = Arr::get($filter, 'value_two');
@@ -963,15 +968,27 @@ class ModelSearch
 
         if (Arr::has($filter, 'settings.source')) {
             $model = Arr::get($filter, 'settings.model');
-            $method_lookup = 'getFilter'.studly_case(Arr::get($filter, 'settings.source')).'Result';
+
+            $method_transform = 'transform'.studly_case($source).'Value';
+
+            if (method_exists($model, $method_transform)) {
+                $value_one = $model->$method_transform($value_one);
+            }
+
+            $method_lookup = 'getFilter'.studly_case($source).'Result';
 
             if (!empty($value_one) && method_exists($model, $method_lookup)) {
                 $value_one = $model->$method_lookup($value_one);
             }
 
+            if (is_null($value_one) || $value_one === false) {
+                return false;
+            }
+
             $operator = 'IN';
             $method = 'whereIn';
             $arguments = [$value_one];
+
         } else {
             $value_one = [];
         }
