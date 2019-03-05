@@ -4,6 +4,7 @@ namespace HnhDigital\ModelSearch;
 
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class ModelSearch
 {
@@ -19,6 +20,7 @@ class ModelSearch
         'boolean',
         'list',
         'listLookup',
+        'scope',
     ];
 
     /**
@@ -369,6 +371,7 @@ class ModelSearch
     private static function convertCast($cast)
     {
         switch ($cast) {
+            case 'integer':
             case 'numeric':
             case 'decimal':
             case 'double':
@@ -583,8 +586,11 @@ class ModelSearch
         ];
 
         // Update filter based on the filter being used.
-        $validation_method = 'filterBy'.studly_case(Arr::get($settings, 'filter'));
-        $filter = self::{$validation_method}($filter);
+        $validation_method = 'filterBy'.Str::studly(Arr::get($settings, 'filter'));
+
+        if (method_exists(__CLASS__, $validation_method)) {
+            $filter = self::{$validation_method}($filter);
+        }
 
         if ($filter === false) {
             return $filter;
@@ -948,6 +954,56 @@ class ModelSearch
     }
 
     /**
+     * Filter by scope.
+     *
+     * @return void
+     *
+     * @SuppressWarnings(PHPMD.UnusedLocalVariable)
+     * @SuppressWarnings(PHPMD.CyclomaticComplexity)
+     */
+    public static function filterByScope($filter)
+    {
+        $operator = Arr::get($filter, 'operator');
+        $method = Arr::get($filter, 'method');
+        $source = Arr::get($filter, 'settings.source');
+        $arguments = Arr::get($filter, 'arguments');
+        $value_one = Arr::get($filter, 'value_one');
+        $value_two = Arr::get($filter, 'value_two');
+        $settings = Arr::get($filter, 'settings');
+        $positive = Arr::get($filter, 'positive');
+
+
+        if (Arr::has($filter, 'settings.source')) {
+            $model = Arr::get($filter, 'settings.model');
+
+            $method_transform = 'transform'.Str::studly($source).'Value';
+
+            if (method_exists($model, $method_transform)) {
+                $value_one = $model->$method_transform($value_one);
+            }
+
+            $method_lookup = 'scope'.Str::studly($source);
+
+            if (!method_exists($model, $method_lookup)) {
+                return false;
+            }
+
+            $method = Str::camel($source);
+            $arguments = [$value_one];
+        }
+
+        return [
+            'operator'  => $operator,
+            'method'    => $method,
+            'arguments' => $arguments,
+            'value_one' => $value_one,
+            'value_two' => $value_two,
+            'settings'  => $settings,
+            'positive'  => $positive,
+        ];
+    }
+
+    /**
      * Filter by list lookup.
      *
      * @return void
@@ -969,13 +1025,13 @@ class ModelSearch
         if (Arr::has($filter, 'settings.source')) {
             $model = Arr::get($filter, 'settings.model');
 
-            $method_transform = 'transform'.studly_case($source).'Value';
+            $method_transform = 'transform'.Str::studly($source).'Value';
 
             if (method_exists($model, $method_transform)) {
                 $value_one = $model->$method_transform($value_one);
             }
 
-            $method_lookup = 'getFilter'.studly_case($source).'Result';
+            $method_lookup = 'getFilter'.Str::studly($source).'Result';
 
             if (empty($value_one)) {
                 return false;
@@ -1126,20 +1182,21 @@ class ModelSearch
      */
     private static function applySearchFilter(&$query, $filter)
     {
+        $filter_type = Arr::get($filter, 'settings.filter');
         $method = Arr::get($filter, 'method');
         $arguments = Arr::get($filter, 'arguments');
         $attributes = Arr::get($filter, 'settings.attributes');
         $positive = Arr::get($filter, 'positive');
 
-        if (is_array($arguments)) {
+        if ($filter_type !== 'scope' && is_array($arguments)) {
             array_unshift($arguments, '');
         }
 
-        $query->where(function ($query) use ($attributes, $method, $arguments, $positive) {
+        $query->where(function ($query) use ($filter_type, $attributes, $method, $arguments, $positive) {
             $count = 0;
             foreach ($attributes as $attribute_name) {
                 // Place attribute name into argument.
-                if (is_array($arguments)) {
+                if ($filter_type !== 'scope' && is_array($arguments)) {
                     $arguments[0] = $attribute_name;
 
                 // Argument is raw and using sprintf.
@@ -1147,11 +1204,15 @@ class ModelSearch
                     $arguments = [sprintf($arguments, self::quoteIdentifier($attribute_name))];
                 }
 
+                if ($filter_type === 'scope') {
+                    $arguments[] = $positive;
+                }
+
                 $query->$method(...$arguments);
 
                 // Apply an or to the where.
-                if ($count === 0 && $positive) {
-                    $method = 'or'.studly_case($method);
+                if ($filter_type !== 'scope' && $count === 0 && $positive) {
+                    $method = 'or'.Str::studly($method);
                 }
 
                 $count++;
