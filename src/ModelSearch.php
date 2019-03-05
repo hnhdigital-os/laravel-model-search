@@ -330,7 +330,7 @@ class ModelSearch
 
         // ModelSchema implementation gives us better data.
         if (class_exists('HnhDigital\ModelSchema\Model')
-            && $model instanceOf \HnhDigital\ModelSchema\Model) {
+            && $model instanceof \HnhDigital\ModelSchema\Model) {
 
             // Build attributes off the schema.
             foreach ($model->getSchema() as $name => $config) {
@@ -972,7 +972,6 @@ class ModelSearch
         $settings = Arr::get($filter, 'settings');
         $positive = Arr::get($filter, 'positive');
 
-
         if (Arr::has($filter, 'settings.source')) {
             $model = Arr::get($filter, 'settings.model');
 
@@ -1050,7 +1049,6 @@ class ModelSearch
             $operator = 'IN';
             $method = 'whereIn';
             $arguments = [$value_one];
-
         } else {
             $value_one = [];
         }
