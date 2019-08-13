@@ -19,7 +19,7 @@ class ModelTest extends TestCase
      *
      * @return void
      */
-    public function setUp()
+    public function setUp(): void
     {
         $this->configureDatabase();
     }

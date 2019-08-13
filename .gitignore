@@ -2,3 +2,4 @@
 /build
 /reports
 /cc-test-reporter
+/.phpunit.result.cache
