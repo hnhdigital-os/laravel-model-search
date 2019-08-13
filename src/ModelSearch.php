@@ -679,22 +679,24 @@ class ModelSearch
         }
 
         // Boolean does not provide inline operations.
-        if (Arr::get($settings, 'filter') === 'boolean') {
+        if (($filter = Arr::get($settings, 'filter')) === 'boolean') {
             return;
         }
 
-        $value_array = explode(' ', trim($value), 2);
+        // Preg quote all the operators.
+        $operators = array_map('preg_quote', self::getAllowedOperators($filter));
 
-        if (count($value_array) == 1) {
+        // Match any one of these operators.
+        $operator_regex = implode('|', $operators);
+
+        preg_match("/({$operator_regex})(.*?)$/", trim($value), $matches);
+
+        if (count($matches) <= 1) {
             return;
         }
 
-        $check_operator = array_shift($value_array);
-
-        if (self::checkOperator(Arr::get($settings, 'filter', 'string'), $check_operator)) {
-            $operator = $check_operator;
-            $value = array_shift($value_array);
-        }
+        $operator = $matches[1];
+        $value = trim($matches[2]);
     }
 
     /**
