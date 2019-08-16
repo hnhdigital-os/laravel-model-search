@@ -101,6 +101,16 @@ class ModelSearch
     ];
 
     /**
+     * Scope operators.
+     *
+     * @var array
+     */
+    protected static $scope_operators = [
+        'IN'     => ['value' => 'IN', 'name' => 'In selected'],
+        'NOT_IN' => ['value' => 'NOT_IN', 'name' => 'Not in selected'],
+    ];
+
+    /**
      * List operators.
      *
      * @var array
