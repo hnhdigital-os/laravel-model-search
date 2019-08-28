@@ -282,7 +282,7 @@ class ModelSearch
         switch ($method) {
             case 'BelongsTo':
             case 'BelongsToMany':
-                $parent_key = $relation->getQualifiedForeignKey();
+                $parent_key = $relation->getQualifiedForeignKeyName();
                 $foreign_key = $relation->getQualifiedOwnerKeyName();
             break;
             case 'HasMany':
@@ -500,6 +500,25 @@ class ModelSearch
 
             // Check and validate each of the filters.
             $filters = self::validateFilters($filters, $settings);
+
+            $attributes = Arr::wrap(Arr::get($settings, 'attributes', []));
+
+            // Scan the attributes array for attributes not against this model.
+            foreach ($attributes as $attribute_name) {
+
+                $attribute_name = (string) $attribute_name;
+
+                preg_match_all("/([a-zA-Z_]*)\.(?:[a-zA-Z_]*)/", $attribute_name, $matches);
+
+                // Add models being used in these attributes.
+                foreach ($matches[1] as $model_name) {
+                    if ($this->model->getTable() === $model_name) {
+                        continue;
+                    }
+
+                    $models_used[$model_name] = true;
+                }
+            }
 
             // Search against current model.
             if (($model_name = Arr::get($settings, 'model_name')) === 'self') {
@@ -1132,14 +1151,26 @@ class ModelSearch
      */
     public function modelJoin($relationships, $operator = '=', $type = 'left', $where = false)
     {
-        if (!is_array($relationships)) {
-            $relationships = [$relationships];
+        $relationships = Arr::wrap($relationships);
+
+        // Check relationships array and remove any that we don't have conenction for.
+        foreach ($relationships as $relation_name => $load_relationship) {
+            if (!Arr::has($this->relationships, $relation_name)) {
+                unset($relationships[$relation_name]);
+            }
         }
 
+        // No model joining required, skip.
+        if (count($relationships) === 0) {
+            return;
+        }
+
+        // Joining other tables creates many extra rows. Using distinct to reduce to one.
         if (empty($this->query->columns)) {
             $this->query->selectRaw('DISTINCT '.$this->model->getTable().'.*');
         }
 
+        // Process each relatioinship and add to the query.
         foreach ($relationships as $relation_name => $load_relationship) {
 
             // Required variables.
