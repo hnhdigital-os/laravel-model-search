@@ -416,7 +416,7 @@ class ModelSearch
             $title = Arr::get($settings, 'title', $name);
 
             if ($title === $name) {
-                $title = title_case($title);
+                $title = Str::title($title);
             }
 
             // Specified attributes, or attribute.
@@ -1341,7 +1341,7 @@ class ModelSearch
             return [];
         }
 
-        $source = snake_case($type).'_operators';
+        $source = Str::snake($type).'_operators';
 
         return self::$$source;
     }
