@@ -385,6 +385,7 @@ class ModelSearch
             case 'numeric':
             case 'decimal':
             case 'double':
+            case 'float':
                 return 'number';
         }
 
