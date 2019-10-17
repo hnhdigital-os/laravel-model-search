@@ -190,7 +190,7 @@ class ModelSearch
     {
         $this->query = $query;
         $this->getAttributes($model);
-        $this->parseRequest($request);
+        $this->processRequest($request);
 
         return $this->query();
     }
@@ -384,8 +384,8 @@ class ModelSearch
             case 'integer':
             case 'numeric':
             case 'decimal':
-            case 'double':
             case 'float':
+            case 'double':
                 return 'number';
         }
 
@@ -469,17 +469,50 @@ class ModelSearch
     }
 
     /**
+     * Parse the given request.
+     *
+     * Values can be provided as a native array, json encoded or a string.
+     *
+     * @param mixed $request
+     *
+     * @return array
+     */
+    protected static function parseRequest($request)
+    {
+        if (empty($request)) {
+            return [];
+        }
+
+        // Array provided.
+        if (is_array($request)) {
+            return $request;
+        }
+
+        // Check if JSON, return array.
+        $json_request = json_decode($request, true);
+
+        if (! is_null($json_request)) {
+            return $json_request;
+        }
+
+        // Convert url query string into array.
+        parse_str($request, $query);
+
+        return $query;
+    }
+
+    /**
      * Process the provided request.
      *
      * @return void
      */
-    private function parseRequest($request)
+    private function processRequest($request)
     {
-        if (empty($request)) {
+        $this->request = self::parseRequest($request);
+
+        if (empty($this->request)) {
             return;
         }
-
-        $this->request = $request;
 
         // Models used in this request.
         $models_used = [];

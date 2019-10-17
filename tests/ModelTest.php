@@ -2,6 +2,7 @@
 
 namespace HnhDigital\ModelSearch\Tests;
 
+use HnhDigital\ModelSearch\ModelSearch;
 use Illuminate\Database\Capsule\Manager as DB;
 use PHPUnit\Framework\TestCase;
 
@@ -67,6 +68,39 @@ class ModelTest extends TestCase
         }
 
         return $sql;
+    }
+
+    protected static function getMethod($class, $name)
+    {
+        $class = new \ReflectionClass($class);
+        $method = $class->getMethod($name);
+        $method->setAccessible(true);
+
+        return $method;
+    }
+
+    /**
+     * Assert a number of simple string searches.
+     *
+     * @return void
+     */
+    public function testRequestParsing()
+    {
+        $method = self::getMethod(ModelSearch::class, 'parseRequest');
+
+        $query = $method->invokeArgs(new ModelSearch(), ['']);
+        $this->assertEquals([], $query);
+
+        $request_array = ['title' => 'Test'];
+
+        $query = $method->invokeArgs(new ModelSearch(), [$request_array]);
+        $this->assertEquals($request_array, $query);
+
+        $query = $method->invokeArgs(new ModelSearch(), [json_encode($request_array)]);
+        $this->assertEquals($request_array, $query);
+
+        $query = $method->invokeArgs(new ModelSearch(), ['title=Test']);
+        $this->assertEquals($request_array, $query);
     }
 
     /**
