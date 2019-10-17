@@ -2,9 +2,9 @@
 
 namespace HnhDigital\ModelSearch;
 
-use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Database\Query\Expression;
 
 class ModelSearch
 {
@@ -242,7 +242,7 @@ class ModelSearch
         $result = [];
 
         foreach ($model->getSearchRelationships() as $method) {
-            if (!method_exists($model, $method)) {
+            if (! method_exists($model, $method)) {
                 continue;
             }
 
@@ -333,7 +333,7 @@ class ModelSearch
         $model_name = 'self';
         $name_append = '';
 
-        if (!is_null($method)) {
+        if (! is_null($method)) {
             $model_name = $method;
             $name_append = $method.'.';
         }
@@ -406,7 +406,7 @@ class ModelSearch
         $model_name = 'self';
         $name_append = '';
 
-        if (!is_null($method)) {
+        if (! is_null($method)) {
             $model_name = $method;
             $name_append = $method.'.';
         }
@@ -450,7 +450,7 @@ class ModelSearch
     private static function validateAttributes($model, $name, &$attributes)
     {
         // Should be an array.
-        if (!is_array($attributes)) {
+        if (! is_array($attributes)) {
             $attributes = [$attributes];
         }
 
@@ -520,7 +520,7 @@ class ModelSearch
         // Review each request.
         foreach ($this->request as $name => $filters) {
             // This name is not present in available attributes.
-            if (!Arr::has($this->attributes, $name)) {
+            if (! Arr::has($this->attributes, $name)) {
                 continue;
             }
 
@@ -539,7 +539,6 @@ class ModelSearch
 
             // Scan the attributes array for attributes not against this model.
             foreach ($attributes as $attribute_name) {
-
                 $attribute_name = (string) $attribute_name;
 
                 preg_match_all("/([a-zA-Z_]*)\.(?:[a-zA-Z_]*)/", $attribute_name, $matches);
@@ -578,7 +577,7 @@ class ModelSearch
      */
     private static function validateFilters($filters, $settings)
     {
-        if (!is_array($filters)) {
+        if (! is_array($filters)) {
             $filters = [$filters];
         }
 
@@ -608,7 +607,7 @@ class ModelSearch
     private static function validateFilterItem($filter, $settings)
     {
         // Convert string to filter array.
-        if (!is_array($filter)) {
+        if (! is_array($filter)) {
             $filter = ['', $filter];
         }
 
@@ -660,7 +659,7 @@ class ModelSearch
         }
 
         // Update based on operator.
-        $filter['positive'] = !(stripos($operator, '!') !== false || stripos($operator, 'NOT') !== false);
+        $filter['positive'] = ! (stripos($operator, '!') !== false || stripos($operator, 'NOT') !== false);
 
         return $filter;
     }
@@ -697,7 +696,7 @@ class ModelSearch
      */
     private static function applyWildAll(&$operator, &$value)
     {
-        $positive = !(stripos($operator, '!') !== false || stripos($operator, 'NOT') !== false);
+        $positive = ! (stripos($operator, '!') !== false || stripos($operator, 'NOT') !== false);
         $operator = $positive ? '*=*' : '*!=*';
         $value_array = str_split(str_replace(' ', '', $value));
         $value = implode('%', $value_array);
@@ -716,7 +715,7 @@ class ModelSearch
 
         self::checkInlineOperator($operator, $value);
 
-        if (!empty($operator)) {
+        if (! empty($operator)) {
             $operator_name = Arr::get(self::getOperator('string', $operator), 'inline', 'contains');
         }
 
@@ -1048,7 +1047,7 @@ class ModelSearch
 
             $method_lookup = 'scope'.Str::studly($source);
 
-            if (!method_exists($model, $method_lookup)) {
+            if (! method_exists($model, $method_lookup)) {
                 return false;
             }
 
@@ -1189,7 +1188,7 @@ class ModelSearch
 
         // Check relationships array and remove any that we don't have conenction for.
         foreach ($relationships as $relation_name => $load_relationship) {
-            if (!Arr::has($this->relationships, $relation_name)) {
+            if (! Arr::has($this->relationships, $relation_name)) {
                 unset($relationships[$relation_name]);
             }
         }
@@ -1275,7 +1274,7 @@ class ModelSearch
                     $arguments[0] = $attribute_name;
 
                 // Argument is raw and using sprintf.
-                } elseif (!is_array($arguments)) {
+                } elseif (! is_array($arguments)) {
                     $arguments = [sprintf($arguments, self::quoteIdentifier($attribute_name))];
                 }
 
@@ -1371,7 +1370,7 @@ class ModelSearch
      */
     public static function getOperators($type)
     {
-        if (!in_array($type, self::getTypes())) {
+        if (! in_array($type, self::getTypes())) {
             return [];
         }
 
