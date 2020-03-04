@@ -50,7 +50,7 @@ class ModelSearch
         '=*'        => ['value' => '=*', 'name' => 'Begins with', 'inline' => 'begins with'],
         '!=*'       => ['value' => '!=*', 'name' => 'Does not begin with', 'inline' => 'does not begin with'],
         '*='        => ['value' => '*=', 'name' => 'Ends with', 'inline' => 'ends with'],
-        '!*='       => ['value' => '*!=', 'name' => 'Does not end with', 'does not end with'],
+        '*!='       => ['value' => '*!=', 'name' => 'Does not end with', 'does not end with'],
         'IN'        => ['value' => 'IN', 'name' => 'In...', 'inline' => 'in', 'helper' => 'Separated by semi-colon'],
         'NOT_IN'    => ['value' => 'NOT_IN', 'name' => 'Not in...', 'inline' => 'not in', 'helper' => 'Separated by semi-colon'],
         'EMPTY'     => ['value' => 'EMPTY', 'name' => 'Empty', 'inline' => 'is empty'],
@@ -382,6 +382,7 @@ class ModelSearch
     {
         switch ($cast) {
             case 'integer':
+            case 'int':
             case 'numeric':
             case 'decimal':
             case 'float':
@@ -745,13 +746,17 @@ class ModelSearch
             return;
         }
 
+        if ($operator !== '' && in_array($operator, self::getAllowedOperators($filter))) {
+            return;
+        }
+
         // Preg quote all the operators.
         $operators = array_map('preg_quote', self::getAllowedOperators($filter));
 
         // Match any one of these operators.
         $operator_regex = implode('|', $operators);
 
-        preg_match("/({$operator_regex})(.*?)$/", trim($value), $matches);
+        preg_match("/((?:{$operator_regex})*)(.*?)$/", trim($value), $matches);
 
         if (count($matches) <= 1) {
             return;

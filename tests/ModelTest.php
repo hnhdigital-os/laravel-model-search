@@ -131,74 +131,74 @@ class ModelTest extends TestCase
     public function testSimpleStringSearches()
     {
         // Wildcard by default.
-        $query = MockModel::search(['title' => 'Test']);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test%\')', $this->getSql($query));
+        $query = MockModel::search(['title' => 'Test1']);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test1%\')', $this->getSql($query));
 
         // Search an attribute that does not have any settings.
-        $query = MockModel::search(['title2' => 'Test']);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title2" like \'%Test%\')', $this->getSql($query));
+        $query = MockModel::search(['title2' => 'Test2']);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title2" like \'%Test2%\')', $this->getSql($query));
 
         // Wildcard by default - using array of values.
-        $query = MockModel::search(['title' => ['Test']]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test%\')', $this->getSql($query));
+        $query = MockModel::search(['title' => ['Test3']]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test3%\')', $this->getSql($query));
 
         // Wildcard by default - using array of values.
-        $query = MockModel::search(['title' => ['Test', 'Test1']]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test%\') and ("mock_model"."title" like \'%Test1%\')', $this->getSql($query));
+        $query = MockModel::search(['title' => ['Test4', 'Test5']]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test4%\') and ("mock_model"."title" like \'%Test5%\')', $this->getSql($query));
 
         // Wildcard by default - using array of values.
-        $query = MockModel::search(['title' => [['Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test%\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['Test6']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test6%\')', $this->getSql($query));
 
         // Operators via array.
 
         // String equal.
-        $query = MockModel::search(['title' => [['=', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" = \'Test\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['=', 'Test7']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" = \'Test7\')', $this->getSql($query));
 
         // String not equal.
-        $query = MockModel::search(['title' => [['!=', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" != \'Test\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['!=', 'Test8']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" != \'Test8\')', $this->getSql($query));
 
         // String like bothside wildcard.
-        $query = MockModel::search(['title' => [['*=*', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test%\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['*=*', 'Test9']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test9%\')', $this->getSql($query));
 
         // String like bothside wildcard.
-        $query = MockModel::search(['title' => [['*!=*', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not like \'%Test%\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['*!=*', 'Test10']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not like \'%Test10%\')', $this->getSql($query));
 
         // String like left wildcard.
-        $query = MockModel::search(['title' => [['*=', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['*=', 'Test11']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'%Test11\')', $this->getSql($query));
 
         // String not like left wildcard.
-        $query = MockModel::search(['title' => [['*!=', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not like \'%Test\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['*!=', 'Test12']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not like \'%Test12\')', $this->getSql($query));
 
         // String like right wildcard.
-        $query = MockModel::search(['title' => [['=*', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'Test%\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['=*', 'Test13']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" like \'Test13%\')', $this->getSql($query));
 
         // String not like right wildcard.
-        $query = MockModel::search(['title' => [['!=*', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not like \'Test%\')', $this->getSql($query));
+        $query = MockModel::search(['title' => [['!=*', 'Test14']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not like \'Test14%\')', $this->getSql($query));
 
         // String in list (single).
-        $query = MockModel::search(['title' => [['IN', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" in (\'Test\'))', $this->getSql($query));
+        $query = MockModel::search(['title' => [['IN', 'Test15']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" in (\'Test15\'))', $this->getSql($query));
 
         // String not in list (single).
-        $query = MockModel::search(['title' => [['NOT_IN', 'Test']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not in (\'Test\'))', $this->getSql($query));
+        $query = MockModel::search(['title' => [['NOT_IN', 'Test16']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not in (\'Test16\'))', $this->getSql($query));
 
         // String in list.
-        $query = MockModel::search(['title' => [['IN', 'Test;Test1']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" in (\'Test\', \'Test1\'))', $this->getSql($query));
+        $query = MockModel::search(['title' => [['IN', 'Test17;Test18']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" in (\'Test17\', \'Test18\'))', $this->getSql($query));
 
         // String not in list.
-        $query = MockModel::search(['title' => [['NOT_IN', 'Test;Test1']]]);
-        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not in (\'Test\', \'Test1\'))', $this->getSql($query));
+        $query = MockModel::search(['title' => [['NOT_IN', 'Test19;Test20']]]);
+        $this->assertEquals($this->sql_begins_with.' where ("mock_model"."title" not in (\'Test19\', \'Test20\'))', $this->getSql($query));
 
         // String is null.
         $query = MockModel::search(['title' => 'NULL']);
