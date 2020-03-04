@@ -2,9 +2,9 @@
 
 namespace HnhDigital\ModelSearch;
 
+use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use Illuminate\Database\Query\Expression;
 
 class ModelSearch
 {

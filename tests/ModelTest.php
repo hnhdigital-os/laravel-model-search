@@ -2,9 +2,9 @@
 
 namespace HnhDigital\ModelSearch\Tests;
 
-use PHPUnit\Framework\TestCase;
 use HnhDigital\ModelSearch\ModelSearch;
 use Illuminate\Database\Capsule\Manager as DB;
+use PHPUnit\Framework\TestCase;
 
 class ModelTest extends TestCase
 {
