@@ -1174,7 +1174,7 @@ class ModelSearch
     }
 
     /**
-     * This determines the foreign key relations automatically to prevent the need to figure out the columns.
+     * Search the related table.
      *
      * @param string $relation_name
      * @param string $operator
@@ -1203,9 +1203,9 @@ class ModelSearch
             return;
         }
 
-        // Joining other tables creates many extra rows. Using distinct to reduce to one.
+        // Distinct rows based on key name.
         if (empty($this->query->columns)) {
-            $this->query->selectRaw('DISTINCT '.$this->model->getTable().'.*');
+            $this->query->selectRaw('DISTINCT '.$this->model->getKeyName().','.$this->model->getTable().'.*');
         }
 
         // Process each relatioinship and add to the query.
@@ -1218,9 +1218,6 @@ class ModelSearch
             $parent_key = Arr::get($this->relationships, $relation_name.'.parent_key');
             $foreign_key = Arr::get($this->relationships, $relation_name.'.foreign_key');
 
-            // Add the columns from the other table.
-            // @todo do we need this?
-            //$this->query->addSelect(new Expression("`$table`.*"));
             $this->query->join($table, $parent_key, $operator, $foreign_key, $type, $where);
 
             // The join above is to the intimidatory table. This joins the query to the actual model.
@@ -1232,9 +1229,6 @@ class ModelSearch
                 $this->query->join($related_table, $related_qualified_key_name, $operator, $related_foreign_key, $type, $where);
             }
         }
-
-        // Group by the original model.
-        $this->query->groupBy($this->model->getQualifiedKeyName());
     }
 
     /**
