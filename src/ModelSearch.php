@@ -1205,7 +1205,7 @@ class ModelSearch
 
         // Distinct rows based on key name.
         if (empty($this->query->columns)) {
-            $this->query->selectRaw('DISTINCT '.$this->model->getKeyName().','.$this->model->getTable().'.*');
+            $this->query->selectRaw('DISTINCT `'.$this->model->getTable().'`.`'.$this->model->getKeyName().'`,`'.$this->model->getTable().'`.*');
         }
 
         // Process each relatioinship and add to the query.
