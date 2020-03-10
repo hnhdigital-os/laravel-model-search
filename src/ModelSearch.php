@@ -210,7 +210,7 @@ class ModelSearch
             }
 
             // Apply search against the related model.
-            $this->query->whereHas($model_name, function ($query) use ($filters) {
+            $this->query->where(function ($query) use ($filters) {
                 self::applySearch($query, $filters);
             });
         }
