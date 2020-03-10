@@ -1217,7 +1217,6 @@ class ModelSearch
 
         // Process each relatioinship and add to the query.
         foreach ($relationships as $relation_name => $unique_table_id) {
-
             $table_name = "{$relation_name}_{$unique_table_id}";
 
             // Required variables.
