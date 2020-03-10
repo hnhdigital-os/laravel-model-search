@@ -539,7 +539,7 @@ class ModelSearch
             $attributes = Arr::wrap(Arr::get($settings, 'attributes', []));
 
             // Scan the attributes array for attributes not against this model.
-            foreach ($attributes as $attribute_name) {
+            foreach ($attributes as &$attribute_name) {
                 $attribute_name = (string) $attribute_name;
 
                 preg_match_all("/([a-zA-Z_]*)\.(?:[a-zA-Z_]*)/", $attribute_name, $matches);
@@ -550,8 +550,16 @@ class ModelSearch
                         continue;
                     }
 
-                    $models_used[$model_name] = true;
+                    if (! isset($models_used[$model_name])) {
+                        $models_used[$model_name] = Str::random(6);
+                    }
+
+                    $attribute_name = str_replace($model_name, "{$model_name}_{$models_used[$model_name]}", $attribute_name);
                 }
+            }
+
+            foreach ($filters as &$filter) {
+                Arr::set($filter, 'settings.attributes', $attributes);
             }
 
             // Search against current model.
@@ -561,7 +569,6 @@ class ModelSearch
             }
 
             // Search against an model via relationship.
-            $models_used[$model_name] = true;
             $this->search_models[$model_name][$name] = $filters;
         }
 
@@ -1192,7 +1199,7 @@ class ModelSearch
         $relationships = Arr::wrap($relationships);
 
         // Check relationships array and remove any that we don't have conenction for.
-        foreach ($relationships as $relation_name => $load_relationship) {
+        foreach ($relationships as $relation_name => $unique_table_id) {
             if (! Arr::has($this->relationships, $relation_name)) {
                 unset($relationships[$relation_name]);
             }
@@ -1209,7 +1216,9 @@ class ModelSearch
         }
 
         // Process each relatioinship and add to the query.
-        foreach ($relationships as $relation_name => $load_relationship) {
+        foreach ($relationships as $relation_name => $unique_table_id) {
+
+            $table_name = "{$relation_name}_{$unique_table_id}";
 
             // Required variables.
             $model = Arr::get($this->relationships, $relation_name.'.model');
@@ -1218,7 +1227,14 @@ class ModelSearch
             $parent_key = Arr::get($this->relationships, $relation_name.'.parent_key');
             $foreign_key = Arr::get($this->relationships, $relation_name.'.foreign_key');
 
-            $this->query->join($table, $parent_key, $operator, $foreign_key, $type, $where);
+            $this->query->join(
+                "{$table} as {$table_name}",
+                $parent_key,
+                $operator,
+                str_replace($relation_name, $table_name, $foreign_key),
+                $type,
+                $where
+            );
 
             // The join above is to the intimidatory table. This joins the query to the actual model.
             if ($method === 'BelongsToMany') {
