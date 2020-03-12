@@ -520,6 +520,8 @@ class ModelSearch
 
         // Review each request.
         foreach ($this->request as $name => $filters) {
+            $name = str_replace('-', '.', $name);
+
             // This name is not present in available attributes.
             if (! Arr::has($this->attributes, $name)) {
                 continue;
