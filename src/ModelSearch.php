@@ -542,6 +542,8 @@ class ModelSearch
 
             // Scan the attributes array for attributes not against this model.
             foreach ($attributes as &$attribute_name) {
+                // Check if this attribute name is an expression.
+                $is_expression = $attribute_name instanceof Expression;
                 $attribute_name = (string) $attribute_name;
 
                 preg_match_all("/([a-zA-Z_]*)\.(?:[a-zA-Z_]*)/", $attribute_name, $matches);
@@ -556,7 +558,13 @@ class ModelSearch
                         $models_used[$model_name] = Str::random(6);
                     }
 
+
                     $attribute_name = str_replace($model_name, "{$model_name}_{$models_used[$model_name]}", $attribute_name);
+
+                    // Recast expression.
+                    if ($is_expression) {
+                        $attribute_name = new Expression($attribute_name);
+                    }
                 }
             }
 
