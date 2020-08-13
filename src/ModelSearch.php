@@ -248,9 +248,11 @@ class ModelSearch
 
             $relation = self::getRelation($model->$method());
             $this->relationships[$method] = $relation;
+            $this->relationships[$relation['table']] = &$relation;
 
             self::buildCastedAttributes($relation['model'], $result, $method);
             self::buildSearchAttributes($relation['model'], $result, $method);
+            unset($relation);
         }
 
         return $result;
