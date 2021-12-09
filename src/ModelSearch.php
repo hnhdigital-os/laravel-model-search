@@ -1273,9 +1273,12 @@ class ModelSearch
     private static function applySearch(&$query, $search)
     {
         foreach ($search as $name => $filters) {
-            foreach ($filters as $filter) {
-                self::applySearchFilter($query, $filter);
-            }
+
+            $query->where(function ($query) use ($filters) {
+                foreach ($filters as $filter) {
+                    self::applySearchFilter($query, $filter);
+                }
+            });
         }
     }
 
@@ -1296,7 +1299,7 @@ class ModelSearch
             array_unshift($arguments, '');
         }
 
-        $query->where(function ($query) use ($filter_type, $attributes, $method, $arguments, $positive) {
+        $query->orWhere(function ($query) use ($filter_type, $attributes, $method, $arguments, $positive) {
             $count = 0;
             foreach ($attributes as $attribute_name) {
                 // Place attribute name into argument.
