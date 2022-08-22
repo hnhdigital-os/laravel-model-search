@@ -651,6 +651,7 @@ class ModelSearch
             self::applyWildAll($operator, $value_one);
         }
 
+        self::checkNumberBetweenOperator($operator, $value_one, $settings);
         self::checkInlineOperator($operator, $value_one, $settings);
         self::checkNullOperator($operator, $value_one);
         self::checkEmptyOperator($operator, $value_one);
@@ -748,6 +749,35 @@ class ModelSearch
             $operator,
             $value,
         ];
+    }
+
+    /**
+     * Check the value for value between two numbers.
+     *
+     * @param string &$operator
+     * @param string &$value
+     *
+     * @return void
+     */
+    private static function checkNumberBetweenOperator(&$operator, &$value, $settings = [])
+    {
+        if (is_array($value)) {
+            return;
+        }
+
+        // Boolean does not provide inline operations.
+        if (($filter = Arr::get($settings, 'filter')) !== 'number') {
+            return;
+        }
+
+        preg_match("/^([0-9]*?)(?: ){0,}-(?: ){0,}([0-9]*?)$/", trim($value), $matches);
+
+        if (count($matches) <= 1) {
+            return;
+        }
+
+        $operator = 'BETWEEN';
+        $value = [trim($matches[1]), trim($matches[2])];
     }
 
     /**
@@ -969,6 +999,10 @@ class ModelSearch
             case '<=':
             case '<':
                 $arguments = [$operator, $value_one];
+                break;
+            case 'BETWEEN':
+                $method = 'whereBetween';
+                $arguments = [$value_one];
                 break;
             case 'EMPTY':
                 $method = 'whereRaw';
