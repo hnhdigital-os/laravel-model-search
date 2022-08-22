@@ -51,8 +51,7 @@ class ModelTest extends TestCase
     /**
      * Get binded sql.
      *
-     * @param Builder $query
-     *
+     * @param  Builder  $query
      * @return string
      */
     private function getSql($query)

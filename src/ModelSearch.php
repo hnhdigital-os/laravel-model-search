@@ -261,8 +261,7 @@ class ModelSearch
     /**
      * Get the table keys based on the relation.
      *
-     * @param Relation $relation
-     *
+     * @param  Relation  $relation
      * @return array
      */
     private static function getRelation($relation)
@@ -324,10 +323,9 @@ class ModelSearch
     /**
      * Build attributes based on the casts array on the model.
      *
-     * @param Model           $model
-     * @param array           &$result
-     * @param nullable|string $method
-     *
+     * @param  Model  $model
+     * @param  array  &$result
+     * @param  nullable|string  $method
      * @return void
      */
     private static function buildCastedAttributes($model, &$result, $method = null)
@@ -398,10 +396,9 @@ class ModelSearch
     /**
      * Build attributes based on the the $search_attributes array on the model.
      *
-     * @param Model           $model
-     * @param array           &$result
-     * @param nullable|string $method
-     *
+     * @param  Model  $model
+     * @param  array  &$result
+     * @param  nullable|string  $method
      * @return void
      */
     private static function buildSearchAttributes($model, &$result, $method = null)
@@ -476,8 +473,7 @@ class ModelSearch
      *
      * Values can be provided as a native array, json encoded or a string.
      *
-     * @param mixed $request
-     *
+     * @param  mixed  $request
      * @return array
      */
     protected static function parseRequest($request)
@@ -561,9 +557,7 @@ class ModelSearch
                         $models_used[$model_name] = Str::random(6);
                     }
 
-
                     $attribute_name = str_replace($model_name, "{$model_name}_{$models_used[$model_name]}", $attribute_name);
-
                 }
 
                 // Recast expression.
@@ -623,9 +617,8 @@ class ModelSearch
     /**
      * Validate each entry.
      *
-     * @param array|string $filter
-     * @param array        $settings
-     *
+     * @param  array|string  $filter
+     * @param  array  $settings
      * @return array|null
      */
     private static function validateFilterItem($filter, $settings)
@@ -692,8 +685,7 @@ class ModelSearch
     /**
      * Get the default operator.
      *
-     * @param string $filter
-     *
+     * @param  string  $filter
      * @return string
      */
     public static function getDefaultOperator($filter, $operator)
@@ -715,8 +707,7 @@ class ModelSearch
     /**
      * Applies a wildcard for between every character.
      *
-     * @param string &$value
-     *
+     * @param  string  &$value
      * @return void
      */
     private static function applyWildAll(&$operator, &$value)
@@ -754,9 +745,8 @@ class ModelSearch
     /**
      * Check the value for value between two numbers.
      *
-     * @param string &$operator
-     * @param string &$value
-     *
+     * @param  string  &$operator
+     * @param  string  &$value
      * @return void
      */
     private static function checkNumberBetweenOperator(&$operator, &$value, $settings = [])
@@ -770,7 +760,7 @@ class ModelSearch
             return;
         }
 
-        preg_match("/^([0-9]*?)(?: ){0,}-(?: ){0,}([0-9]*?)$/", trim($value), $matches);
+        preg_match('/^([0-9]*?)(?: ){0,}-(?: ){0,}([0-9]*?)$/', trim($value), $matches);
 
         if (count($matches) <= 1) {
             return;
@@ -783,9 +773,8 @@ class ModelSearch
     /**
      * Check the value for inline operator.
      *
-     * @param string &$operator
-     * @param string &$value
-     *
+     * @param  string  &$operator
+     * @param  string  &$value
      * @return void
      */
     private static function checkInlineOperator(&$operator, &$value, $settings = [])
@@ -822,9 +811,8 @@ class ModelSearch
     /**
      * Check the value for null or not null.
      *
-     * @param string &$operator
-     * @param string &$value
-     *
+     * @param  string  &$operator
+     * @param  string  &$value
      * @return void
      */
     public static function checkNullOperator(&$operator, &$value)
@@ -838,9 +826,8 @@ class ModelSearch
     /**
      * Check the value for empty or not empty.
      *
-     * @param string &$operator
-     * @param string &$value
-     *
+     * @param  string  &$operator
+     * @param  string  &$value
      * @return void
      */
     public static function checkEmptyOperator(&$operator, &$value)
@@ -1233,11 +1220,10 @@ class ModelSearch
     /**
      * Search the related table.
      *
-     * @param string $relation_name
-     * @param string $operator
-     * @param string $type
-     * @param bool   $where
-     *
+     * @param  string  $relation_name
+     * @param  string  $operator
+     * @param  string  $type
+     * @param  bool  $where
      * @return Builder
      *
      * @SuppressWarnings(PHPMD.BooleanArgumentFlag)
@@ -1299,15 +1285,13 @@ class ModelSearch
     /**
      * Apply search items to the query.
      *
-     * @param Builder $query
-     * @param array   $search
-     *
+     * @param  Builder  $query
+     * @param  array  $search
      * @return void
      */
     private static function applySearch(&$query, $search)
     {
         foreach ($search as $name => $filters) {
-
             $query->where(function ($query) use ($filters) {
                 foreach ($filters as $filter) {
                     self::applySearchFilter($query, $filter);
@@ -1364,8 +1348,7 @@ class ModelSearch
     /**
      * Quote a database identifier.
      *
-     * @param string $str
-     *
+     * @param  string  $str
      * @return string
      */
     private static function quoteIdentifier($str)
@@ -1388,9 +1371,8 @@ class ModelSearch
     /**
      * Check if a given type/operator is available.
      *
-     * @param string $type
-     * @param string $operator
-     *
+     * @param  string  $type
+     * @param  string  $operator
      * @return bool
      */
     public static function checkOperator($type, $operator)
@@ -1401,9 +1383,8 @@ class ModelSearch
     /**
      * Get an operators details.
      *
-     * @param string $type
-     * @param string $operator
-     *
+     * @param  string  $type
+     * @param  string  $operator
      * @return bool
      */
     public static function getOperator($type, $operator)
@@ -1416,8 +1397,7 @@ class ModelSearch
     /**
      * Get operators allowed for the given type.
      *
-     * @param string $type
-     *
+     * @param  string  $type
      * @return array
      */
     public static function getAllowedOperators($type)
@@ -1430,9 +1410,8 @@ class ModelSearch
     /**
      * Get an string|number|date operators as array|string.
      *
-     * @param string|number|date $type
-     * @param bool               $operator
-     *
+     * @param  string|number|date  $type
+     * @param  bool  $operator
      * @return array|string|null
      */
     public static function getOperators($type)
@@ -1449,8 +1428,7 @@ class ModelSearch
     /**
      * Get array of values from an input string.
      *
-     * @param string $string
-     *
+     * @param  string  $string
      * @return array
      */
     private static function getListFromString($value)
