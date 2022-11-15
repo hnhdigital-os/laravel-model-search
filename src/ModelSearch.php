@@ -760,7 +760,7 @@ class ModelSearch
             return;
         }
 
-        preg_match('/^([0-9]*?)(?: ){0,}-(?: ){0,}([0-9]*?)$/', trim($value), $matches);
+        preg_match('/^(?:-){0,}([0-9]){1,}(?: ){0,}><(?: ){0,}(?:-){0,}([0-9]){1,}$/', trim($value), $matches);
 
         if (count($matches) <= 1) {
             return;
