@@ -1266,7 +1266,13 @@ class ModelSearch
                 "{$table} as {$table_name}",
                 $parent_key,
                 $operator,
-                str_replace($relation_name, $table_name, $foreign_key),
+                preg_replace_callback(
+                    "/^(".preg_quote($relation_name).")\.((?:`)?.*?(?:`)?)$/",
+                    function ($matches) use ($table_name) {
+                        return $table_name.".".str_replace('`', '', $matches[2]);
+                    },
+                    $foreign_key
+                ),
                 $type,
                 $where
             );
