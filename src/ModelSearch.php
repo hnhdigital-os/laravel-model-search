@@ -285,15 +285,15 @@ class ModelSearch
             case 'BelongsToMany':
                 $parent_key = $relation->getQualifiedForeignKeyName();
                 $foreign_key = $relation->getQualifiedOwnerKeyName();
-            break;
+                break;
             case 'HasMany':
                 $parent_key = $relation->getQualifiedParentKeyName();
                 $foreign_key = $relation->getQualifiedForeignKeyName();
-            break;
+                break;
             case 'HasOne':
                 $parent_key = $table.'.'.$relation->getParentKey();
                 $foreign_key = $table.'.'.$relation->getForeignKeyName();
-            break;
+                break;
         }
 
         return [
@@ -341,7 +341,6 @@ class ModelSearch
         // ModelSchema implementation gives us better data.
         if (class_exists('HnhDigital\ModelSchema\Model')
             && $model instanceof \HnhDigital\ModelSchema\Model) {
-
             // Build attributes off the schema.
             foreach ($model->getSchema() as $name => $config) {
                 $result[$name_append.$name] = [
@@ -601,7 +600,6 @@ class ModelSearch
 
         // Each fitler.
         foreach ($filters as $index => &$filter) {
-
             // Check this item.
             $filter = self::validateFilterItem($filter, $settings);
 
@@ -1267,9 +1265,9 @@ class ModelSearch
                 $parent_key,
                 $operator,
                 preg_replace_callback(
-                    "/^(".preg_quote($relation_name).")\.((?:`)?.*?(?:`)?)$/",
+                    '/^('.preg_quote($relation_name).")\.((?:`)?.*?(?:`)?)$/",
                     function ($matches) use ($table_name) {
-                        return $table_name.".".str_replace('`', '', $matches[2]);
+                        return $table_name.'.'.str_replace('`', '', $matches[2]);
                     },
                     $foreign_key
                 ),
