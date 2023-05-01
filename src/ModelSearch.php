@@ -51,8 +51,8 @@ class ModelSearch
         '!=*'       => ['value' => '!=*', 'name' => 'Does not begin with', 'inline' => 'does not begin with'],
         '*='        => ['value' => '*=', 'name' => 'Ends with', 'inline' => 'ends with'],
         '*!='       => ['value' => '*!=', 'name' => 'Does not end with', 'does not end with'],
-        'IN'        => ['value' => 'IN', 'name' => 'In...', 'inline' => 'in', 'helper' => 'Separated by semi-colon'],
-        'NOT_IN'    => ['value' => 'NOT_IN', 'name' => 'Not in...', 'inline' => 'not in', 'helper' => 'Separated by semi-colon'],
+        'IN '        => ['value' => 'IN', 'name' => 'In...', 'inline' => 'in', 'helper' => 'Separated by semi-colon'],
+        'NOT_IN '    => ['value' => 'NOT_IN', 'name' => 'Not in...', 'inline' => 'not in', 'helper' => 'Separated by semi-colon'],
         'EMPTY'     => ['value' => 'EMPTY', 'name' => 'Empty', 'inline' => 'is empty'],
         'NOT_EMPTY' => ['value' => 'NOT_EMPTY', 'name' => 'Not empty', 'inline' => 'is not empty'],
         'NULL'      => ['value' => 'NULL', 'name' => 'NULL', 'inline' => 'is null'],
@@ -71,8 +71,8 @@ class ModelSearch
         '>='        => ['value' => '>=', 'name' => 'Greater than and equal to'],
         '<='        => ['value' => '<=', 'name' => 'Less than and equal to'],
         '<'         => ['value' => '<', 'name' => 'Less than'],
-        'IN'        => ['value' => 'IN', 'name' => 'In...', 'helper' => 'Separated by semi-colon'],
-        'NOT_IN'    => ['value' => 'NOT_IN', 'name' => 'Not in...', 'helper' => 'Separated by semi-colon'],
+        'IN '       => ['value' => 'IN', 'name' => 'In...', 'helper' => 'Separated by semi-colon'],
+        'NOT_IN '   => ['value' => 'NOT_IN', 'name' => 'Not in...', 'helper' => 'Separated by semi-colon'],
         'EMPTY'     => ['value' => 'EMPTY', 'name' => 'Empty'],
         'NOT_EMPTY' => ['value' => 'NOT_EMPTY', 'name' => 'Not empty'],
         'NULL'      => ['value' => 'NULL', 'name' => 'NULL'],
@@ -106,8 +106,8 @@ class ModelSearch
      * @var array
      */
     protected static $scope_operators = [
-        'IN'     => ['value' => 'IN', 'name' => 'In selected'],
-        'NOT_IN' => ['value' => 'NOT_IN', 'name' => 'Not in selected'],
+        'IN '     => ['value' => 'IN', 'name' => 'In selected'],
+        'NOT_IN ' => ['value' => 'NOT_IN', 'name' => 'Not in selected'],
     ];
 
     /**
@@ -116,8 +116,8 @@ class ModelSearch
      * @var array
      */
     protected static $list_operators = [
-        'IN'     => ['value' => 'IN', 'name' => 'In selected'],
-        'NOT_IN' => ['value' => 'NOT_IN', 'name' => 'Not in selected'],
+        'IN '     => ['value' => 'IN', 'name' => 'In selected'],
+        'NOT_IN ' => ['value' => 'NOT_IN', 'name' => 'Not in selected'],
     ];
 
     /**
@@ -128,8 +128,8 @@ class ModelSearch
      * @SuppressWarnings(PHPMD.LongVariable)
      */
     protected static $list_lookup_operators = [
-        'IN'     => ['value' => 'IN', 'name' => 'In selected'],
-        'NOT_IN' => ['value' => 'NOT_IN', 'name' => 'Not in selected'],
+        'IN '     => ['value' => 'IN', 'name' => 'In selected'],
+        'NOT_IN ' => ['value' => 'NOT_IN', 'name' => 'Not in selected'],
     ];
 
     /**
