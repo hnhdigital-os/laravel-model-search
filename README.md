@@ -12,8 +12,6 @@ Search a model by providing an array of attributes. Correctly builds relationshi
 
 [![Latest Stable Version](https://poser.pugx.org/hnhdigital-os/laravel-model-search/v/stable.svg)](https://packagist.org/packages/hnhdigital-os/laravel-model-search) [![Total Downloads](https://poser.pugx.org/hnhdigital-os/laravel-model-search/downloads.svg)](https://packagist.org/packages/hnhdigital-os/laravel-model-search) [![Latest Unstable Version](https://poser.pugx.org/hnhdigital-os/laravel-model-search/v/unstable.svg)](https://packagist.org/packages/hnhdigital-os/laravel-model-search) [![Built for Laravel](https://img.shields.io/badge/Built_for-Laravel-green.svg)](https://laravel.com/) [![License](https://poser.pugx.org/hnhdigital-os/laravel-model-search/license.svg)](https://packagist.org/packages/hnhdigital-os/laravel-model-search) [![Donate to this project using Patreon](https://img.shields.io/badge/patreon-donate-yellow.svg)](https://patreon.com/RoccoHoward)
 
-[![Build Status](https://travis-ci.org/hnhdigital-os/laravel-model-search.svg?branch=master)](https://travis-ci.org/hnhdigital-os/laravel-model-search) [![StyleCI](https://styleci.io/repos/116483691/shield?branch=master)](https://styleci.io/repos/116483691) [![Test Coverage](https://codeclimate.com/github/hnhdigital-os/laravel-model-search/badges/coverage.svg)](https://codeclimate.com/github/hnhdigital-os/laravel-model-search/coverage) [![Issue Count](https://codeclimate.com/github/hnhdigital-os/laravel-model-search/badges/issue_count.svg)](https://codeclimate.com/github/hnhdigital-os/laravel-model-search) [![Code Climate](https://codeclimate.com/github/hnhdigital-os/laravel-model-search/badges/gpa.svg)](https://codeclimate.com/github/hnhdigital-os/laravel-model-search)
-
 This package has been developed by H&H|Digital, an Australian botique developer. Visit us at [hnh.digital](http://hnh.digital).
 
 ## Documentation
@@ -28,14 +26,14 @@ This package has been developed by H&H|Digital, an Australian botique developer.
 
 ## Requirements
 
-* PHP 7.2
-* Laravel 5.8
+* PHP 8.0.2
+* Laravel 9
 
 ## Install
 
 Via composer:
 
-`$ composer require hnhdigital-os/laravel-model-search ~1.0`
+`$ composer require hnhdigital-os/laravel-model-search ~3.0`
 
 ## Configuration
 
