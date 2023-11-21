@@ -541,8 +541,11 @@ class ModelSearch
             foreach ($attributes as &$attribute_name) {
                 // Check if this attribute name is an expression.
                 $is_expression = $attribute_name instanceof Expression || is_object($attribute_name);
+                $attribute_name_expression = $attribute_name;
 
-                $attribute_name = (string) $attribute_name;
+                if ($is_expression) {
+                    $attribute_name = $attribute_name->getValue(new \Illuminate\Database\Schema\Grammars\MySqlGrammar());
+                }
 
                 preg_match_all("/([a-zA-Z_]*)\.(?:[a-zA-Z_]*)/", $attribute_name, $matches);
 
